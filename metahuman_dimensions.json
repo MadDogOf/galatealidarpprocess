@@ -1,0 +1,189 @@
+{
+  "metahuman_customization": {
+    "body": {
+      "global": {
+        "masculinity": {
+          "description": "Broadly define masculine or feminine traits.",
+          "range": [-2.0, 2.0]
+        },
+        "muscularity": {
+          "description": "Controls the overall muscle definition of the character.",
+          "range": [0.0, 1.0]
+        },
+        "fat": {
+          "description": "Controls the overall body fat percentage.",
+          "range": [-1.0, 1.0]
+        },
+        "height": {
+          "description": "Overall height of the MetaHuman in centimeters.",
+          "unit": "cm"
+        }
+      },
+      "upper_torso": {
+        "across_shoulder": {
+          "description": "Width across the back from shoulder to shoulder.",
+          "unit": "cm"
+        },
+        "shoulder_width": {
+          "description": "Width of the individual shoulders.",
+          "unit": "cm"
+        },
+        "front_inner_shoulder": {
+          "description": "Measurement of the front inner shoulder region.",
+          "unit": "cm"
+        },
+        "chest": {
+          "description": "Circumference of the chest.",
+          "unit": "cm"
+        },
+        "bust_size": {
+          "description": "Size of the bust (primarily for feminine traits).",
+          "unit": "cm"
+        },
+        "underbust": {
+          "description": "Circumference directly below the bust.",
+          "unit": "cm"
+        },
+        "neck_to_waist": {
+          "description": "Vertical distance from the base of the neck to the waist.",
+          "unit": "cm"
+        }
+      },
+      "lower_torso": {
+        "waist": {
+          "description": "Circumference of the waist at its narrowest point.",
+          "unit": "cm"
+        },
+        "high_hip": {
+          "description": "Circumference at the top of the hip bones.",
+          "unit": "cm"
+        },
+        "hip": {
+          "description": "Circumference at the widest part of the hips.",
+          "unit": "cm"
+        }
+      },
+      "neck": {
+        "neck_circumference": {
+          "description": "Circumference of the neck.",
+          "unit": "cm"
+        },
+        "neck_base": {
+          "description": "Width/circumference at the base of the neck.",
+          "unit": "cm"
+        },
+        "neck_length": {
+          "description": "Length of the neck from base to jawline.",
+          "unit": "cm"
+        }
+      },
+      "arms": {
+        "upper_arm_length": {
+          "description": "Length of the upper arm segment.",
+          "unit": "cm"
+        },
+        "lower_arm_length": {
+          "description": "Length of the lower arm segment.",
+          "unit": "cm"
+        },
+        "forearm_girth": {
+          "description": "Thickness/circumference of the forearm.",
+          "unit": "cm"
+        },
+        "bicep_girth": {
+          "description": "Thickness/circumference of the bicep region.",
+          "unit": "cm"
+        },
+        "elbow_width": {
+          "description": "Width of the elbow joint.",
+          "unit": "cm"
+        }
+      },
+      "legs": {
+        "upper_leg_length": {
+          "description": "Length of the thigh/femur segment.",
+          "unit": "cm"
+        },
+        "lower_leg_length": {
+          "description": "Length of the calf/tibia segment.",
+          "unit": "cm"
+        },
+        "thigh_girth": {
+          "description": "Circumference of the thigh at its thickest point.",
+          "unit": "cm"
+        },
+        "calf_girth": {
+          "description": "Circumference of the calf muscle.",
+          "unit": "cm"
+        },
+        "ankle_girth": {
+          "description": "Circumference of the ankle joint.",
+          "unit": "cm"
+        },
+        "knee_width": {
+          "description": "Width of the knee joint.",
+          "unit": "cm"
+        }
+      }
+    },
+    "face": {
+      "attributes": {
+        "age": {
+          "description": "Visual age of the skin, affecting wrinkles and texture.",
+          "range": [0.0, 1.0]
+        },
+        "skin_roughness": {
+          "description": "Micro-surface roughness of the skin texture.",
+          "range": [0.0, 1.0]
+        },
+        "skin_texture_index": {
+          "description": "Choice of underlying scan data for skin pores and details.",
+          "options": "150+"
+        },
+        "head_scale": {
+          "description": "Overall size of the head relative to the body.",
+          "range": [0.8, 1.2]
+        },
+        "neck_thickness": {
+          "description": "Broadly controls the thickness of the neck mesh.",
+          "range": [0.0, 1.0]
+        }
+      },
+      "sculpting_regions": [
+        "Forehead (Depth, Width)",
+        "Brows (Inner/Outer Height, Depth)",
+        "Eyes (Upper/Lower Lid Shape, Canthus Position, Depth)",
+        "Cheeks (Malar Height, Buccal Fullness)",
+        "Nose (Bridge Height, Tip Angle, Alae Width, Septum Length)",
+        "Mouth (Upper/Lower Lip Fullness, Philtrum Shape, Corner Position)",
+        "Jaw (Angle Width, Body Length)",
+        "Chin (Apex Depth, Width, Pointiness)",
+        "Ears (Lobe Size, Helix Shape, Angle)",
+        "Neck (Thickness, Adam's Apple Prominence)"
+      ],
+      "features": {
+        "eyes": {
+          "iris": ["Color", "Size", "Texture Index", "Saturation"],
+          "pupil": ["Size", "Dilation"],
+          "sclera": ["Brightness", "Vascularity", "Color"],
+          "shape": ["Rotation", "Scale", "Position"]
+        },
+        "teeth": {
+          "general": ["Variation Index", "Brightness", "Translucency"],
+          "gums": ["Color", "Occlusion", "Moistness"]
+        },
+        "hair": {
+          "categories": ["Head", "Eyebrows", "Eyelashes", "Mustache", "Beard"],
+          "parameters": ["Color", "Melanin", "Redness", "Roughness", "Salt and Pepper"]
+        },
+        "makeup": {
+          "foundation": ["Coverage", "Color", "Roughness"],
+          "eyeshadow": ["Style", "Color", "Opacity", "Metalness"],
+          "eyeliner": ["Style", "Color", "Opacity"],
+          "blush": ["Style", "Color", "Opacity"],
+          "lipstick": ["Color", "Roughness", "Opacity"]
+        }
+      }
+    }
+  }
+}

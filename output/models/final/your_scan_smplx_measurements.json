@@ -1,0 +1,60 @@
+{
+  "source": "your_scan_aligned.obj",
+  "method": "smplx_fit",
+  "gender": "male",
+  "units": "cm",
+  "final_loss": 0.000758294714614749,
+  "iterations": 400,
+  "betas": [
+    0.0042,
+    0.0559,
+    0.0265,
+    -0.0024,
+    -0.0062,
+    -0.0082,
+    -0.007,
+    0.003,
+    0.0046,
+    0.0013
+  ],
+  "scale": 1.0524,
+  "measurements": {
+    "global": {
+      "height": 187.6
+    },
+    "upper_torso": {
+      "across_shoulder": 39.7,
+      "shoulder_width": 19.8,
+      "front_inner_shoulder": 41.6,
+      "chest": 114.9,
+      "bust_size": 114.9,
+      "underbust": 109.9,
+      "neck_to_waist": 28.5
+    },
+    "lower_torso": {
+      "waist": 103.8,
+      "high_hip": 103.8,
+      "hip": 109.2
+    },
+    "neck": {
+      "neck_circumference": 51.2,
+      "neck_base": 58.0,
+      "neck_length": 10.3
+    },
+    "arms": {
+      "upper_arm_length": 28.8,
+      "lower_arm_length": 28.2,
+      "bicep_girth": 34.3,
+      "forearm_girth": 28.5,
+      "elbow_width": 8.2
+    },
+    "legs": {
+      "upper_leg_length": 41.3,
+      "lower_leg_length": 45.4,
+      "thigh_girth": 57.0,
+      "calf_girth": 35.6,
+      "ankle_girth": 31.3,
+      "knee_width": 12.9
+    }
+  }
+}

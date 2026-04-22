@@ -1,0 +1,19 @@
+# Environments
+venv/
+.env
+__pycache__/
+*.pyc
+
+# Node
+node_modules/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Large Models (already tracked or to be tracked by LFS)
+# models_smplx_v1_1.zip
+# smplx_models/
+
+# Sub-repos (if any)
+# galatea-site/.git

@@ -1,0 +1,19 @@
+{
+  "source": "C:\\Users\\s246192\\Documents\\antigravity\\input\\models\\your_scan.obj",
+  "output": "C:\\Users\\s246192\\Documents\\antigravity\\output\\models\\aligned\\your_scan_aligned.obj",
+  "steps_applied": [],
+  "final_height_cm": 186.9,
+  "final_bounds": [
+    [
+      -311.688751,
+      -169.89020749999997,
+      0.0
+    ],
+    [
+      311.688751,
+      169.8902075,
+      1869.453594
+    ]
+  ],
+  "centroid_z_ratio": 0.489
+}

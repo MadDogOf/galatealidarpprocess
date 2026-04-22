@@ -1,0 +1,20 @@
+# Core AI libraries
+torch
+torchvision
+torchaudio
+smplx
+human_body_prior
+
+# 3D Processing & Visualization
+trimesh
+# pyrender (often hard to install on Windows, let's skip for headless fitting)
+opencv-python
+numpy
+pyyaml
+
+# Utilities
+tqdm
+scipy
+pillow
+mediapipe
+configargparse
