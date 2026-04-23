@@ -716,11 +716,28 @@
             }
         }
 
+        // Global state for debugging and persistence
+        window.anatomyState = {
+            currentPath: [],
+            rawData: {},
+            mapping: {
+                "Upper Body": {
+                    "Neck & Shoulders": ["neck_circumference", "neck_base", "across_shoulder", "shoulder_width", "neck_length"],
+                    "Chest & Torso": ["chest", "bust_size", "underbust", "neck_to_waist", "waist"],
+                    "Arms": ["upper_arm_length", "lower_arm_length", "bicep_girth", "forearm_girth", "elbow_width"]
+                },
+                "Lower Body": {
+                    "Hips & Waist": ["waist", "high_hip", "hip"],
+                    "Legs": ["upper_leg_length", "lower_leg_length", "thigh_girth", "calf_girth", "ankle_girth", "knee_width"]
+                }
+            }
+        };
+
         function renderMeasurements(m) {
             const grid = document.getElementById('measurementsGrid');
-            grid.innerHTML = '';
-            
-            const rawData = {};
+            if (!grid) return;
+
+            window.anatomyState.rawData = {};
             const flatten = (obj) => {
                 if (!obj) return;
                 Object.entries(obj).forEach(([key, val]) => {
@@ -728,121 +745,108 @@
                         flatten(val);
                     } else if (typeof val === 'number') {
                         const skip = ['final_loss', 'iterations', 'total_time', 'scale'];
-                        if (!skip.includes(key)) rawData[key] = val;
+                        if (!skip.includes(key)) window.anatomyState.rawData[key] = val;
                     }
                 });
             };
             flatten(m);
-
-            const mapping = {
-                "Upper Body": {
-                    "Neck & Shoulders": ["neck_circumference", "shoulder_width", "shoulder_to_shoulder"],
-                    "Chest & Torso": ["chest_circumference", "waist_circumference"],
-                    "Arms": ["arm_length", "bicep_circumference", "forearm_circumference", "wrist_circumference"]
-                },
-                "Lower Body": {
-                    "Hips & Waist": ["hip_circumference", "waist_circumference"], // Waist often needed for both
-                    "Legs": ["leg_length", "thigh_circumference", "calf_circumference", "ankle_circumference"]
-                }
-            };
-
-            // Breadcrumb navigation
-            let currentPath = [];
-
-            const renderMenu = () => {
-                grid.innerHTML = '';
-                
-                // Header / Breadcrumb
-                const breadcrumb = document.createElement('div');
-                breadcrumb.className = "col-span-12 mb-6 flex items-center gap-2 text-[10px] tracking-stealth";
-                
-                const rootBtn = document.createElement('button');
-                rootBtn.className = "text-yellow-400/50 hover:text-yellow-400 transition-colors";
-                rootBtn.textContent = "ANATOMY_ROOT";
-                rootBtn.onclick = () => { currentPath = []; renderMenu(); };
-                breadcrumb.appendChild(rootBtn);
-
-                currentPath.forEach((step, i) => {
-                    const arrow = document.createElement('span');
-                    arrow.className = "text-white/10";
-                    arrow.textContent = " / ";
-                    breadcrumb.appendChild(arrow);
-                    
-                    const stepBtn = document.createElement('button');
-                    stepBtn.className = "text-white/40";
-                    stepBtn.textContent = step.toUpperCase().replace(/_/g, ' ');
-                    breadcrumb.appendChild(stepBtn);
-                });
-                grid.appendChild(breadcrumb);
-
-                let level = mapping;
-                currentPath.forEach(p => level = level[p]);
-
-                if (Array.isArray(level)) {
-                    // Display measurements
-                    level.forEach(key => {
-                        const val = rawData[key];
-                        if (val === undefined) return;
-
-                        const card = document.createElement('div');
-                        card.className = "col-span-4 measurement-card p-6 rounded-xl flex flex-col gap-2 group bg-white/[0.02] border border-white/5 animate-fade-in";
-                        
-                        const label = document.createElement('span');
-                        label.className = "text-[9px] tracking-stealth text-white/30 group-hover:text-yellow-400 transition-all uppercase";
-                        label.textContent = key.replace(/_/g, ' ');
-                        
-                        const valRow = document.createElement('div');
-                        valRow.className = "flex items-baseline gap-2";
-                        
-                        const valSpan = document.createElement('span');
-                        valSpan.className = "text-3xl font-outfit font-bold tracking-tight text-white/90";
-                        valSpan.textContent = val.toFixed(1);
-                        
-                        const unit = document.createElement('span');
-                        unit.className = "text-[10px] text-white/20 font-mono";
-                        unit.textContent = "CM";
-                        
-                        valRow.appendChild(valSpan);
-                        valRow.appendChild(unit);
-                        card.appendChild(label);
-                        card.appendChild(valRow);
-                        grid.appendChild(card);
-                    });
-                } else {
-                    // Display sub-categories
-                    Object.keys(level).forEach(key => {
-                        const card = document.createElement('div');
-                        card.className = "col-span-6 h-32 measurement-card rounded-2xl flex flex-col items-center justify-center gap-4 cursor-pointer hover:border-yellow-400/40 animate-fade-in group";
-                        card.onclick = () => { currentPath.push(key); renderMenu(); };
-                        
-                        const iconDiv = document.createElement('div');
-                        iconDiv.className = "w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-white/20 group-hover:text-yellow-400 group-hover:bg-yellow-400/10 transition-all";
-                        
-                        // Pick icon based on key
-                        let iconName = 'box';
-                        if (key === 'Upper Body') iconName = 'user';
-                        if (key === 'Lower Body') iconName = 'arrow-down';
-                        if (key === 'Arms') iconName = 'activity';
-                        if (key === 'Legs') iconName = 'trending-down';
-                        if (key.includes('Chest')) iconName = 'heart';
-                        if (key.includes('Neck')) iconName = 'circle';
-                        if (key.includes('Hips')) iconName = 'layers';
-
-                        iconDiv.innerHTML = `<i data-lucide="${iconName}" class="w-5 h-5"></i>`;
-                        
-                        const label = document.createElement('span');
-                        label.className = "text-[11px] tracking-stealth text-white/40 group-hover:text-white transition-colors uppercase font-bold";
-                        label.textContent = key;
-                        
-                        card.appendChild(iconDiv);
-                        card.appendChild(label);
-                        grid.appendChild(card);
-                    });
-                }
-                lucide.createIcons();
-            };
-
+            window.anatomyState.currentPath = [];
             renderMenu();
+        }
+
+        function renderMenu() {
+            const grid = document.getElementById('measurementsGrid');
+            if (!grid) return;
+            
+            grid.innerHTML = '';
+            const { currentPath, rawData, mapping } = window.anatomyState;
+            
+            let level = mapping;
+            currentPath.forEach(step => {
+                if (level && level[step]) level = level[step];
+            });
+
+            // Navigation Bar
+            const nav = document.createElement('div');
+            nav.className = "col-span-12 mb-6 flex items-center justify-between";
+            
+            const breadcrumb = document.createElement('div');
+            breadcrumb.className = "flex items-center gap-2 text-[10px] tracking-stealth text-white/40";
+            
+            const rootBtn = document.createElement('button');
+            rootBtn.className = "hover:text-yellow-400 transition-colors uppercase font-bold";
+            rootBtn.textContent = "ANATOMY";
+            rootBtn.onclick = () => { window.anatomyState.currentPath = []; renderMenu(); };
+            breadcrumb.appendChild(rootBtn);
+
+            currentPath.forEach((step, i) => {
+                const arrow = document.createElement('span');
+                arrow.className = "text-white/10";
+                arrow.textContent = "/";
+                breadcrumb.appendChild(arrow);
+                
+                const stepBtn = document.createElement('button');
+                stepBtn.className = i === currentPath.length - 1 ? "text-yellow-400 font-bold" : "hover:text-white transition-colors";
+                stepBtn.textContent = step.toUpperCase();
+                stepBtn.onclick = () => { 
+                    window.anatomyState.currentPath = currentPath.slice(0, i + 1); 
+                    renderMenu(); 
+                };
+                breadcrumb.appendChild(stepBtn);
+            });
+            
+            nav.appendChild(breadcrumb);
+            grid.appendChild(nav);
+
+            if (Array.isArray(level)) {
+                // Display measurements
+                level.forEach(key => {
+                    const val = rawData[key];
+                    if (val === undefined) return;
+
+                    const card = document.createElement('div');
+                    card.className = "col-span-4 measurement-card rounded-xl p-5 border border-white/5 bg-white/[0.02] flex flex-col gap-1 animate-fade-in";
+                    const label = key.split('_').map(w => w.toUpperCase()).join(' ');
+                    
+                    card.innerHTML = `
+                        <p class="text-[9px] tracking-stealth text-white/30">${label}</p>
+                        <div class="flex items-baseline gap-2">
+                            <span class="text-2xl font-outfit font-bold text-yellow-400">${val.toFixed(1)}</span>
+                            <span class="text-[10px] text-white/20 tracking-widest">CM</span>
+                        </div>
+                    `;
+                    grid.appendChild(card);
+                });
+            } else {
+                // Display categories
+                Object.keys(level).forEach(key => {
+                    const sub = level[key];
+                    const count = Array.isArray(sub) 
+                        ? sub.filter(k => rawData[k] !== undefined).length
+                        : Object.values(sub).flat(2).filter(k => rawData[k] !== undefined).length;
+
+                    const card = document.createElement('div');
+                    card.className = `col-span-6 glass p-8 rounded-2xl border border-white/5 hover:border-yellow-400/30 transition-all cursor-pointer group flex items-center justify-between animate-fade-in ${count === 0 ? 'opacity-40 grayscale' : ''}`;
+                    
+                    card.innerHTML = `
+                        <div>
+                            <h3 class="tracking-stealth text-white/60 group-hover:text-yellow-400 transition-colors">${key.toUpperCase()}</h3>
+                            <p class="text-[9px] text-white/20 mt-1 uppercase">${count > 0 ? `${count} METRICS DETECTED` : 'NO DATA AVAILABLE'}</p>
+                        </div>
+                        <i data-lucide="chevron-right" class="w-4 h-4 text-white/10 group-hover:text-yellow-400 transition-all"></i>
+                    `;
+                    card.onclick = () => { 
+                        if (count > 0) {
+                            window.anatomyState.currentPath.push(key); 
+                            renderMenu(); 
+                        } else {
+                            showToast(`No measurements available for ${key}`, 'info');
+                        }
+                    };
+                    grid.appendChild(card);
+                });
+            }
+            lucide.createIcons();
         }
 
         // Drop zone drag/drop
