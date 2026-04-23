@@ -1,6 +1,6 @@
 {
-  "source": "C:\\Users\\s246192\\Documents\\antigravity\\input\\models\\your_scan.obj",
-  "output": "C:\\Users\\s246192\\Documents\\antigravity\\output\\models\\aligned\\your_scan_aligned.obj",
+  "source": "/Users/arkaghosh/Desktop/AntiGravity/Galatea/galatealidarpprocess/input/models/your_scan.obj",
+  "output": "/Users/arkaghosh/Desktop/AntiGravity/Galatea/galatealidarpprocess/output/models/aligned/your_scan_aligned.obj",
   "steps_applied": [],
   "final_height_cm": 186.9,
   "final_bounds": [
