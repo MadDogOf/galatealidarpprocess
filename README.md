@@ -22,6 +22,38 @@ directly on the mesh geometry of a single OBJ file.
 
 ---
 
+## 🚀 Installation & Setup
+
+### 1. Git LFS (Large File Storage)
+This project uses Git LFS to manage large model files (SMPL-X weights in `.npz` format). Ensure you have Git LFS installed before cloning or pulling.
+
+**macOS:**
+```bash
+brew install git-lfs
+git lfs install
+```
+
+**Windows:**
+Download and install from [git-lfs.github.com](https://git-lfs.github.com), then run:
+```bash
+git lfs install
+```
+
+After cloning, ensure all large files are downloaded:
+```bash
+git lfs pull
+```
+
+### 2. Python Environment
+Install the required dependencies:
+```bash
+pip install trimesh numpy scipy shapely torch
+```
+
+Tested with NumPy 2.x, Python 3.10+.
+
+---
+
 ## Requirements
 
 ```bash
