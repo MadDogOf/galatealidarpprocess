@@ -1,0 +1,19 @@
+{
+  "source": "/Users/arkaghosh/Desktop/AntiGravity/Galatea/galatealidarpprocess/input/models/uploaded_scan.obj",
+  "output": "/Users/arkaghosh/Desktop/AntiGravity/Galatea/galatealidarpprocess/output/models/aligned/uploaded_scan_aligned.obj",
+  "steps_applied": [],
+  "final_height_cm": 186.9,
+  "final_bounds": [
+    [
+      -311.688751,
+      -169.89020749999997,
+      0.0
+    ],
+    [
+      311.688751,
+      169.8902075,
+      1869.453594
+    ]
+  ],
+  "centroid_z_ratio": 0.489
+}

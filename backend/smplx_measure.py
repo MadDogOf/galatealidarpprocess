@@ -468,6 +468,8 @@ def extract_measurements(fit: dict) -> dict:
     #    JSON serialization errors when values come from the joints array)
     def cm(x): return round(float(x) * 100.0, 1) if x is not None else None
 
+    def flt(x): return round(float(x), 5)
+
     return {
         "global": {
             "height": cm(height_m),
@@ -505,6 +507,20 @@ def extract_measurements(fit: dict) -> dict:
             "calf_girth":       cm(calf_circ),
             "ankle_girth":      cm(ankle_circ),
             "knee_width":       cm(knee_width),
+        },
+        # ── Slice Z heights in metres (world space, Z-up) ─────────────────
+        # Consumed by annotate_measurements.py to build the exploded view.
+        # Stored as a private key so it doesn't appear inside "measurements".
+        "_slice_z_m": {
+            "ankle":     flt(z_ankle + 0.01),
+            "calf":      flt(z_mid_calf),
+            "thigh":     flt(z_mid_thigh),
+            "high_hip":  flt((z_hip + z_spine1) / 2),
+            "hip":       flt(z_hip + 0.01),
+            "waist":     flt(z_spine2),
+            "underbust": flt(z_spine3 - 0.02),
+            "chest":     flt((z_spine3 + j("left_shoulder")[2]) / 2 - 0.04),
+            "neck":      flt(z_neck_mid),
         },
     }
 
@@ -597,6 +613,9 @@ def run(obj_path: str,
 
     print("\nExtracting measurements from fitted SMPL-X…")
     measurements = extract_measurements(fit)
+    # Pull the internal slice-height block out before writing to JSON so it
+    # lives at the top level (not nested inside "measurements").
+    slice_z_m = measurements.pop("_slice_z_m", {})
 
     doc = {
         "source":        src.name,
@@ -608,6 +627,7 @@ def run(obj_path: str,
         "betas":         [round(b, 4) for b in fit["betas"]],
         "scale":         round(fit["scale"], 4),
         "measurements":  measurements,
+        "slice_z_m":     slice_z_m,   # exact cut Z heights for exploded-view annotator
     }
 
     out_json.parent.mkdir(parents=True, exist_ok=True)

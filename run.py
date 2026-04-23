@@ -34,6 +34,28 @@ def main():
     print("=" * 60)
     print(f"System: {platform.system()} | Python: {sys.version.split()[0]}")
 
+    # Check for 'sh' command
+    if len(sys.argv) > 1 and sys.argv[1] == "sh":
+        if len(sys.argv) > 2:
+            sh_file = sys.argv[2]
+            if os.path.exists(sh_file):
+                print(f"[SYSTEM] Executing script: {sh_file}")
+                if platform.system() == "Windows":
+                    if sh_file.endswith(".bat") or sh_file.endswith(".cmd"):
+                        os.system(f"call {sh_file}")
+                    else:
+                        # Try bash if available, or just run it
+                        os.system(f"bash {sh_file}")
+                else:
+                    os.system(f"bash {sh_file}")
+                return
+            else:
+                print(f"[ERROR] Script not found: {sh_file}")
+                return
+        else:
+            print("[ERROR] Please specify a script (e.g., python run.py sh sun.sh)")
+            return
+
     skip_deps = "--skip-deps" in sys.argv
 
     # Optional --gender passthrough

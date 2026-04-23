@@ -1,19 +1,21 @@
 {
   "source": "/Users/arkaghosh/Desktop/AntiGravity/Galatea/galatealidarpprocess/input/models/your_scan.obj",
   "output": "/Users/arkaghosh/Desktop/AntiGravity/Galatea/galatealidarpprocess/output/models/aligned/your_scan_aligned.obj",
-  "steps_applied": [],
-  "final_height_cm": 186.9,
+  "steps_applied": [
+    "auto-detected +Y \u2192 rotated to -Y"
+  ],
+  "final_height_cm": 2978.2,
   "final_bounds": [
     [
-      -311.688751,
-      -169.89020749999997,
+      -14.777009500000002,
+      -14.820085,
       0.0
     ],
     [
-      311.688751,
-      169.8902075,
-      1869.453594
+      14.777009500000002,
+      14.820085000000002,
+      29.781934
     ]
   ],
-  "centroid_z_ratio": 0.489
+  "centroid_z_ratio": 0.505
 }

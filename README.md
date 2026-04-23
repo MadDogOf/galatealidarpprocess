@@ -82,20 +82,48 @@ outputs, aligned scans, and measurement JSONs in one directory.
 
 ## Quick start
 
-**The simplest way — one command does it all:**
+### The Easiest Way — Automated Setup & Dashboard
+One command sets up your environment, installs dependencies, starts the backend server, and launches the visual dashboard.
+
+**macOS / Linux:**
+```bash
+python run.py sh sun.sh
+```
+*(Alternatively, run `./run.sh` directly)*
+
+**Windows:**
+```powershell
+.\run.bat
+```
+
+### Direct Pipeline — One command does it all
+Run the pipeline directly from the CLI. This will automatically open the UI for visualization unless `--no-ui` is passed.
 
 ```powershell
 python runfor3dmodel.py
 # ...uses input\models\your_scan.obj by default
-# ...produces output\models\aligned\your_scan_aligned.obj
-# ...produces output\models\final\your_scan_smplx_measurements.json
-# ...produces output\models\final\your_scan_smplx_measurements.obj
-# ...prints the verification report at the end
+# ...detects gender, aligns, fits SMPL-X, and extracts measurements
+# ...starts the API server and opens http://127.0.0.1:5001 for 3D visualization
 ```
 
-[runfor3dmodel.py](runfor3dmodel.py) orchestrates all three stages below in
-sequence: **alignment → SMPL-X fitting → validation**. Runs in ~1½ minutes on
-CPU for the default 400-iter fit with gender auto-detect.
+---
+
+## 💎 Galatea Stealth Dashboard
+
+The project now includes a high-fidelity **Luxury Stealth Dashboard** for visual verification of 3D scans and measurements.
+
+### Features
+- **Dual 3D Viewports**: Compare your "Aligned Original" scan with the "Morphed SMPL-X" model side-by-side.
+- **Anatomical Telemetry**: Real-time display of 21+ tailor measurements (chest, waist, hip, etc.).
+- **Interactive Controls**: Drag-and-drop new scans, toggle gender overrides, and trigger processing directly from the browser.
+- **Zero-Dependency**: Built with Vanilla JS and Three.js for maximum performance.
+
+### How to use
+1. Run `python run.py sh sun.sh` (or `run.bat` on Windows).
+2. Once the dashboard opens, drag an `.obj` file into the drop zone.
+3. Watch the 3D fitting process in real-time.
+
+---
 
 ### Orchestrator CLI flags
 

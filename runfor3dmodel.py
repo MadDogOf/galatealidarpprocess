@@ -129,9 +129,34 @@ def main() -> None:
                    help="Skip alignment (use when scan is already aligned)")
     p.add_argument("--skip-verify", action="store_true",
                    help="Skip measurement validation")
+    p.add_argument("--skip-annotate", action="store_true",
+                   help="Skip 3D annotation visualization")
     p.add_argument("--clean", action="store_true",
                    help="Wipe output/ before running")
+    p.add_argument("--ui", action="store_true", default=True,
+                   help="Start the web dashboard automatically (default: True)")
+    p.add_argument("--no-ui", action="store_false", dest="ui",
+                   help="Disable automatic dashboard launch")
     args = p.parse_args()
+
+    # Auto-start UI if requested
+    if args.ui:
+        print("\n" + "=" * 72)
+        print("  GALATEA VISION: STARTING WEB DASHBOARD")
+        print("=" * 72)
+        try:
+            import webbrowser
+            # Start api_server.py in a separate process
+            subprocess.Popen([sys.executable, str(ROOT / "api_server.py")])
+            time.sleep(2)
+            webbrowser.open("http://127.0.0.1:5001")
+            print("\n[ok] Dashboard launched at http://127.0.0.1:5001")
+            print("[info] Keep this terminal open to maintain the backend server.")
+            # If ONLY --ui was requested, we might want to stay here
+            if not args.scan:
+                while True: time.sleep(1)
+        except Exception as e:
+            print(f"[ERROR] Could not start UI: {e}")
 
     # Optional clean
     if args.clean:
@@ -148,6 +173,7 @@ def main() -> None:
     total_stages = 1  # SMPL-X stage is always run
     if not args.skip_align:  total_stages += 1
     if not args.skip_verify: total_stages += 1
+    if not args.skip_annotate and not args.no_save_obj: total_stages += 1
     stage = 0
 
     print()
@@ -203,6 +229,25 @@ def main() -> None:
             "Verification",
         )
 
+    # ── Stage 4: annotation ──────────────────────────────────────────────────
+    if args.skip_annotate or args.no_save_obj:
+        if args.no_save_obj:
+            print("\n[skip] annotation skipped (no fitted OBJ saved)")
+        else:
+            print("\n[skip] annotation stage skipped (--skip-annotate)")
+    else:
+        stage += 1
+        banner(stage, total_stages, "Generating 3D annotation visualization")
+        fitted_obj = measurements_json.with_suffix('.obj')
+        if fitted_obj.exists():
+            run_stage(
+                [sys.executable, str(BACKEND / "annotate_measurements.py"),
+                 str(fitted_obj)],
+                "Annotation",
+            )
+        else:
+            print(f"[WARN] Fitted OBJ not found for annotation: {fitted_obj}")
+
     # ── Done — report artefacts ──────────────────────────────────────────────
     print()
     print("#" * 72)
@@ -211,6 +256,8 @@ def main() -> None:
     print(f"  Aligned OBJ      : {aligned_obj}")
     print(f"  Fitted SMPL-X OBJ: {measurements_json.with_suffix('.obj')}")
     print(f"  Measurements JSON: {measurements_json}")
+    if not args.skip_annotate and not args.no_save_obj:
+        print(f"  Exploded OBJ     : {measurements_json.with_name(measurements_json.stem + '_exploded.obj')}")
     print()
 
 
