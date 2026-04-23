@@ -40,7 +40,7 @@ def upload_file():
         
         # Run the pipeline
         # Using sys.executable to ensure we use the right python
-        cmd = [sys.executable, str(ROOT / "runfor3dmodel.py"), str(file_path), "--gender", gender]
+        cmd = [sys.executable, str(ROOT / "runfor3dmodel.py"), str(file_path), "--gender", gender, "--no-ui"]
         
         try:
             result = subprocess.run(cmd, capture_output=True, text=True, check=True)
@@ -69,6 +69,7 @@ def upload_file():
         
         return jsonify({
             "status": "success",
+            "raw_scan": "/files/input/models/uploaded_scan.obj",
             "og_scan": "/files/output/models/aligned/uploaded_scan_aligned.obj",
             "morphed_model": morphed_path,
             "exploded_model": exploded_path,

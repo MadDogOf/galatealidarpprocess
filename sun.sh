@@ -29,16 +29,19 @@ if [ ! -d "smplx_models/models" ]; then
 fi
 
 # 4. Launch API Server & Frontend
-echo "[SYSTEM] Starting Galatea Vision API Server..."
-# Run server in background
-python3 api_server.py &
-SERVER_PID=$!
-
-# Wait for server to boot
-sleep 2
-
-echo "[SYSTEM] Launching Dashboard..."
-open "http://127.0.0.1:5001"
+if lsof -Pi :5001 -sTCP:LISTEN -t >/dev/null ; then
+    echo "[SYSTEM] Galatea Vision is already running on port 5001."
+    echo "[SYSTEM] Processing will continue in your existing browser window."
+else
+    echo "[SYSTEM] Starting Galatea Vision API Server..."
+    # Run server in background
+    python3 api_server.py &
+    SERVER_PID=$!
+    # Wait for server to boot
+    sleep 2
+    echo "[SYSTEM] Launching Dashboard..."
+    open "http://127.0.0.1:5001"
+fi
 
 echo "===================================================="
 echo "  SYSTEM ACTIVE - Press Ctrl+C to shutdown"

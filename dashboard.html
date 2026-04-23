@@ -12,12 +12,12 @@
     <style>
         :root {
             --primary: #ffd700;
-            --accent: #3b82f6;
-            --background: #020617; /* Deeper midnight blue */
+            --accent: #ffffff;
+            --background: #0a0a0a;
             --foreground: #f8fafc;
-            --glass: rgba(255, 255, 255, 0.02);
-            --border: rgba(255, 255, 255, 0.08);
-            --glow: rgba(255, 215, 0, 0.15);
+            --glass: rgba(255, 255, 255, 0.01);
+            --border: rgba(255, 255, 255, 0.05);
+            --glow: rgba(255, 215, 0, 0.1);
         }
 
         body {
@@ -27,7 +27,7 @@
             margin: 0;
             overflow: hidden;
             height: 100vh;
-            background-image: radial-gradient(circle at 50% -20%, #1e293b 0%, transparent 70%);
+            background-image: radial-gradient(circle at 50% -20%, #171717 0%, transparent 80%);
         }
 
         .font-outfit { font-family: 'Outfit', sans-serif; }
@@ -97,25 +97,6 @@
             position: relative;
         }
 
-        .scanning-grid {
-            background-image: 
-                linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-            background-size: 32px 32px;
-            pointer-events: none;
-        }
-
-        .scan-line {
-            position: absolute;
-            left: 0;
-            width: 100%;
-            height: 2px;
-            background: linear-gradient(90deg, transparent, var(--primary), transparent);
-            box-shadow: 0 0 15px var(--primary);
-            opacity: 0.3;
-            animation: scanline 4s linear infinite;
-            pointer-events: none;
-        }
 
         canvas {
             width: 100% !important;
@@ -177,8 +158,7 @@
 </head>
 <body>
     <!-- Background Glows -->
-    <div class="absolute top-0 left-1/2 w-[1000px] h-[500px] bg-yellow-500/10 blur-[150px] rounded-full animate-glow-top -z-10"></div>
-    <div class="absolute bottom-0 left-1/2 w-[1000px] h-[500px] bg-blue-500/10 blur-[150px] rounded-full animate-glow-bottom -z-10"></div>
+    <div class="absolute top-0 left-1/2 w-[1000px] h-[500px] bg-yellow-500/5 blur-[150px] rounded-full animate-glow-top -z-10"></div>
 
     <div class="toast-container" id="toastContainer"></div>
 
@@ -207,17 +187,8 @@
                     </button>
                 </div>
                 <div class="h-10 w-[1px] bg-white/10"></div>
-                <div class="flex items-center gap-3">
-                    <div class="text-right">
-                        <p class="text-[10px] tracking-stealth text-white/30">SYSTEM STATUS</p>
-                        <p class="text-xs font-bold text-green-500 flex items-center gap-1.5 justify-end">
-                            <span class="relative flex h-2 w-2">
-                                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                                <span class="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
-                            </span>
-                            ONLINE
-                        </p>
-                    </div>
+                <div class="px-4 py-1.5 bg-yellow-400/5 rounded-md border border-yellow-400/20 text-[10px] tracking-stealth text-yellow-400">
+                    SECURE_SESSION_ACTIVE
                 </div>
             </div>
         </header>
@@ -278,17 +249,15 @@
                     </div>
                 </div>
 
-                <div class="glass p-8 rounded-2xl flex-1 flex flex-col gap-6 border border-white/10 overflow-hidden relative">
-                    <h2 class="tracking-stealth text-white/50 flex items-center gap-2.5">
-                        <i data-lucide="terminal" class="w-4 h-4 text-blue-400"></i> SYSTEM TELEMETRY
-                    </h2>
-                    <div id="telemetry" class="flex-1 overflow-y-auto terminal-text text-white/30 space-y-2 pr-4 custom-scroll">
-                        <p class="text-blue-400/60">[SYSTEM] KERNEL LOADED SUCCESSFULLY</p>
-                        <p>[AUTH] SESSION TOKEN VALIDATED</p>
-                        <p>[INFO] STANDBY FOR DATA UPLOAD...</p>
+                    <div class="flex-1 rounded-2xl border border-dashed border-white/5 flex flex-col items-center justify-center p-8 text-center gap-4 group/box overflow-hidden relative">
+                        <div class="absolute inset-0 bg-yellow-400/[0.02] opacity-0 group-hover/box:opacity-100 transition-opacity"></div>
+                        <i data-lucide="shield-check" class="w-10 h-10 text-white/5 group-hover/box:text-yellow-400/20 transition-all"></i>
+                        <div class="relative z-10">
+                            <p class="text-[10px] tracking-stealth text-white/20 uppercase">Encryption Layer</p>
+                            <p class="text-[9px] text-white/10 mt-1">AES-256 GCM SECURED</p>
+                        </div>
                     </div>
                 </div>
-            </div>
 
             <!-- Viewport Grid -->
             <div class="col-span-9 grid grid-rows-12 gap-8 h-full overflow-hidden">
@@ -296,16 +265,14 @@
                     <!-- Window 1: OG Scan -->
                     <div class="glass rounded-2xl border border-white/10 relative overflow-hidden flex flex-col group/view">
                         <div class="h-12 border-b border-white/5 flex items-center justify-between px-6 z-10 bg-white/[0.02]">
-                            <span class="tracking-stealth text-white/40 group-hover/view:text-white/60 transition-colors">VIEWPORT_01: ALIGNED_SCAN</span>
+                            <span class="tracking-stealth text-yellow-400/50 group-hover/view:text-yellow-400/80 transition-colors">VIEWPORT_01: RAW_INPUT_SCAN</span>
                             <div class="flex gap-1.5">
                                 <div class="w-1.5 h-1.5 rounded-full bg-white/10"></div>
                                 <div class="w-1.5 h-1.5 rounded-full bg-white/10"></div>
                                 <div class="w-1.5 h-1.5 rounded-full bg-white/10"></div>
                             </div>
                         </div>
-                        <div id="viewer1" class="flex-1 three-container bg-[radial-gradient(circle_at_center,rgba(60,60,255,0.03)_0%,transparent_100%)]">
-                            <div class="absolute inset-0 scanning-grid opacity-20"></div>
-                            <div class="scan-line"></div>
+                        <div id="viewer1" class="flex-1 three-container bg-[radial-gradient(circle_at_center,rgba(255,215,0,0.01)_0%,transparent_100%)]">
                             <div id="loader1" class="absolute inset-0 flex flex-col items-center justify-center gap-4 text-white/10 tracking-stealth text-[10px]">
                                 <div class="w-12 h-12 rounded-full border-2 border-dashed border-white/10 animate-[spin_10s_linear_infinite]"></div>
                                 AWAITING_DATA_STREAM
@@ -326,8 +293,6 @@
                             <i data-lucide="zap" class="w-3.5 h-3.5 text-yellow-400/30 group-hover/view:text-yellow-400/60 transition-colors"></i>
                         </div>
                         <div id="viewer2" class="flex-1 three-container bg-[radial-gradient(circle_at_center,rgba(255,215,0,0.03)_0%,transparent_100%)]">
-                            <div class="absolute inset-0 scanning-grid opacity-10"></div>
-                            <div class="scan-line" style="animation-delay: -2s;"></div>
                             <div id="loader2" class="absolute inset-0 flex flex-col items-center justify-center gap-4 text-white/10 tracking-stealth text-[10px]">
                                 <div class="w-12 h-12 rounded-full border-2 border-dashed border-white/10 animate-[spin_10s_linear_infinite_reverse]"></div>
                                 AWAITING_SYNTHESIS
@@ -339,11 +304,11 @@
 
                 <!-- Window 3: Measurements -->
                 <div class="row-span-5 glass rounded-2xl border border-white/10 p-10 flex flex-col relative overflow-hidden">
-                    <div class="absolute -bottom-20 -left-20 w-64 h-64 bg-blue-500/5 blur-3xl rounded-full"></div>
+                    <div class="absolute -bottom-20 -left-20 w-64 h-64 bg-yellow-400/5 blur-3xl rounded-full"></div>
                     
                     <div class="flex items-center justify-between mb-8">
-                        <h2 class="tracking-stealth text-white/50 flex items-center gap-3">
-                            <i data-lucide="database" class="w-4 h-4 text-blue-400"></i> ANATOMICAL TELEMETRY DATA
+                        <h2 class="tracking-stealth text-white/40 flex items-center gap-3">
+                            <i data-lucide="anatomical-model" class="w-4 h-4 text-yellow-400"></i> ANATOMICAL_VERIFICATION
                         </h2>
                         <div class="flex gap-4">
                             <div class="px-4 py-1.5 bg-white/5 rounded-md border border-white/5 text-[10px] tracking-stealth text-white/30">METRIC: CM</div>
@@ -352,10 +317,18 @@
                     </div>
 
                     <div id="measurementsGrid" class="flex-1 grid grid-cols-12 gap-6 overflow-y-auto pr-6 custom-scroll">
-                        <!-- Placeholder -->
-                        <div class="col-span-12 h-full flex flex-col items-center justify-center border border-dashed border-white/5 rounded-2xl text-white/10 tracking-stealth gap-4">
-                            <i data-lucide="layers" class="w-8 h-8 opacity-20"></i>
-                            <span class="text-xs">Awaiting synthesis completion to populate anatomical data...</span>
+                        <!-- Initial Categories -->
+                        <div class="col-span-6 h-32 measurement-card rounded-2xl flex flex-col items-center justify-center gap-4 cursor-pointer opacity-40 hover:opacity-100 transition-opacity" onclick="showToast('Awaiting synthesis to unlock anatomical regions.', 'info')">
+                            <div class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-white/20">
+                                <i data-lucide="user" class="w-5 h-5"></i>
+                            </div>
+                            <span class="text-[11px] tracking-stealth text-white/40 uppercase font-bold">Upper Body</span>
+                        </div>
+                        <div class="col-span-6 h-32 measurement-card rounded-2xl flex flex-col items-center justify-center gap-4 cursor-pointer opacity-40 hover:opacity-100 transition-opacity" onclick="showToast('Awaiting synthesis to unlock anatomical regions.', 'info')">
+                            <div class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-white/20">
+                                <i data-lucide="arrow-down" class="w-5 h-5"></i>
+                            </div>
+                            <span class="text-[11px] tracking-stealth text-white/40 uppercase font-bold">Lower Body</span>
                         </div>
                     </div>
                 </div>
@@ -363,20 +336,7 @@
         </main>
 
         <!-- Footer -->
-        <footer class="h-12 border-t border-white/5 glass flex items-center px-10 justify-between z-50">
-            <div class="flex items-center gap-8 text-[10px] tracking-stealth text-white/30">
-                <span class="flex items-center gap-2.5">
-                    <div class="w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_8px_#22c55e]"></div> 
-                    CORE ENGINE: STABLE
-                </span>
-                <span class="h-3 w-[1px] bg-white/10"></span>
-                <span>LATENCY: 42MS</span>
-                <span>TORCH_DEVICE: CPU_OPTIMIZED</span>
-            </div>
-            <div class="text-[10px] tracking-stealth text-white/20 font-mono">
-                [ SHA-256: 4F2A-9B1C-E3D0-87F1 ]
-            </div>
-        </footer>
+
     </div>
 
     <!-- Scripts -->
@@ -423,7 +383,7 @@
             
             const icon = document.createElement('i');
             icon.setAttribute('data-lucide', type === 'error' ? 'alert-circle' : type === 'success' ? 'check-circle' : 'info');
-            icon.className = `w-5 h-5 ${type === 'error' ? 'text-red-400' : type === 'success' ? 'text-green-400' : 'text-blue-400'}`;
+            icon.className = `w-5 h-5 ${type === 'error' ? 'text-red-400' : type === 'success' ? 'text-green-400' : 'text-yellow-400'}`;
             
             const text = document.createElement('span');
             text.className = 'text-sm font-medium tracking-tight text-white/80';
@@ -444,23 +404,15 @@
         };
 
         const log = (msg, type = 'default') => {
-            const tel = document.getElementById('telemetry');
-            const p = document.createElement('p');
-            p.textContent = msg;
+            // Simplified logging since telemetry box is removed, use toasts for critical info
             if (type === 'error') {
-                p.className = 'text-red-400';
                 showToast(msg.replace(/\[ERROR\]\s*/, ''), 'error');
-            }
-            if (type === 'success') {
-                p.className = 'text-green-400';
+            } else if (type === 'success') {
                 showToast(msg.replace(/\[OK\]\s*/, ''), 'success');
-            }
-            if (type === 'process') {
-                p.className = 'text-yellow-400 animate-pulse';
+            } else if (type === 'process') {
                 showToast(msg.replace(/\[PROCESS\]\s*/, ''), 'info');
             }
-            tel.appendChild(p);
-            tel.scrollTop = tel.scrollHeight;
+            console.log(msg);
         };
 
         class Viewer {
@@ -468,7 +420,7 @@
                 this.container = document.getElementById(containerId);
                 this.color = color;
                 this.scene = new THREE.Scene();
-                this.camera = new THREE.PerspectiveCamera(45, this.container.clientWidth / this.container.clientHeight, 0.1, 1000);
+                this.camera = new THREE.PerspectiveCamera(45, this.container.clientWidth / this.container.clientHeight, 0.01, 1000);
                 this.camera.position.set(0, 0, 3);
                 
                 this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
@@ -503,24 +455,66 @@
                 this.renderer.render(this.scene, this.camera);
             }
 
-            load(url) {
+            fitToView() {
+                if (!this.model) return;
+                
+                const box = new THREE.Box3().setFromObject(this.model);
+                const size = box.getSize(new THREE.Vector3());
+                const center = box.getCenter(new THREE.Vector3());
+
+                const maxSize = Math.max(size.x, size.y, size.z);
+                const fitHeightDistance = maxSize / (2 * Math.atan(Math.PI * this.camera.fov / 360));
+                const fitWidthDistance = fitHeightDistance / this.camera.aspect;
+                const distance = 1.2 * Math.max(fitHeightDistance, fitWidthDistance);
+
+                const direction = new THREE.Vector3()
+                    .subVectors(this.camera.position, center)
+                    .multiply(new THREE.Vector3(1, 0, 1))
+                    .normalize();
+
+                this.camera.position.copy(direction.multiplyScalar(distance).add(center));
+                this.camera.position.y = center.y + (size.y * 0.2); // Slight upward tilt
+                
+                this.camera.near = maxSize / 100;
+                this.camera.far = maxSize * 100;
+                this.camera.updateProjectionMatrix();
+
+                this.controls.target.copy(center);
+                this.controls.update();
+            }
+
+            load(url, skipFit = false) {
                 const loader = new OBJLoader();
                 const self = this;
                 
                 loader.load(url, (obj) => {
                     if (self.model) self.scene.remove(self.model);
                     
+                    // Auto-detect unit and scale to meters
                     const box = new THREE.Box3().setFromObject(obj);
-                    const center = box.getCenter(new THREE.Vector3());
-                    obj.position.sub(center);
+                    const size = box.getSize(new THREE.Vector3());
+                    const maxDim = Math.max(size.x, size.y, size.z);
                     
+                    if (maxDim > 500) obj.scale.setScalar(0.001); // mm -> m
+                    else if (maxDim > 50) obj.scale.setScalar(0.01); // cm -> m
+                    
+                    // Center and floor
+                    box.setFromObject(obj);
+                    const center = box.getCenter(new THREE.Vector3());
+                    obj.position.x -= center.x;
+                    obj.position.y -= box.min.y; // Floor at y=0
+                    obj.position.z -= center.z;
+
                     obj.traverse((child) => {
                         if (child.isMesh) {
                             child.material = new THREE.MeshStandardMaterial({
                                 color: self.color,
-                                roughness: 0.3,
-                                metalness: 0.4,
-                                wireframe: false
+                                roughness: 0.4,
+                                metalness: 0.3,
+                                wireframe: false,
+                                transparent: false,
+                                opacity: 1.0,
+                                side: THREE.DoubleSide
                             });
                         }
                     });
@@ -528,31 +522,49 @@
                     self.scene.add(obj);
                     self.model = obj;
                     
-                    // Add subtle entry animation
-                    obj.scale.set(0,0,0);
-                    let s = 0;
-                    const grow = () => {
-                        s += 0.05;
-                        if (s < 1) {
-                            obj.scale.set(s,s,s);
-                            requestAnimationFrame(grow);
-                        } else {
-                            obj.scale.set(1,1,1);
-                        }
+                    if (!skipFit) {
+                        self.fitToView();
                     }
-                    grow();
-                }, (xhr) => {
-                    // Optional: Handle loading progress
-                }, (err) => {
+                }, undefined, (err) => {
                     console.error('Error loading OBJ:', err);
-                    log(`[ERROR] FAILED TO LOAD 3D MODEL`, 'error');
                 });
             }
         }
 
         // Init viewers
-        v1 = new Viewer('viewer1', 0x3b82f6);
+        v1 = new Viewer('viewer1', 0xfacc15); // Both yellow
         v2 = new Viewer('viewer2', 0xfacc15);
+
+        // Sync cameras
+        v1.controls.addEventListener('change', () => {
+            if (v1.controls.isInteracting) {
+                v2.camera.position.copy(v1.camera.position);
+                v2.camera.quaternion.copy(v1.camera.quaternion);
+                v2.camera.zoom = v1.camera.zoom;
+                v2.controls.target.copy(v1.controls.target);
+                v2.camera.updateProjectionMatrix();
+                v2.controls.update();
+            }
+        });
+
+        v2.controls.addEventListener('change', () => {
+            if (v2.controls.isInteracting) {
+                v1.camera.position.copy(v2.camera.position);
+                v1.camera.quaternion.copy(v2.camera.quaternion);
+                v1.camera.zoom = v2.camera.zoom;
+                v1.controls.target.copy(v2.controls.target);
+                v1.camera.updateProjectionMatrix();
+                v1.controls.update();
+            }
+        });
+
+        // Add interaction tracking to OrbitControls
+        const setupSync = (controls) => {
+            controls.addEventListener('start', () => { controls.isInteracting = true; });
+            controls.addEventListener('end', () => { controls.isInteracting = false; });
+        };
+        setupSync(v1.controls);
+        setupSync(v2.controls);
 
         // File handling
         const dropZone = document.getElementById('dropZone');
@@ -694,11 +706,11 @@
             sidebarCheck.checked = isExploded;
             
             if (isExploded) {
-                v2.load(lastResult.exploded_model);
+                v2.load(lastResult.exploded_model, true);
                 check.classList.add('bg-yellow-400', 'border-yellow-400');
                 log(`[UI] VIEWPORT_02: SWITCHED TO EXPLODED ANATOMY`);
             } else {
-                v2.load(lastResult.morphed_model);
+                v2.load(lastResult.morphed_model, true);
                 check.classList.remove('bg-yellow-400', 'border-yellow-400');
                 log(`[UI] VIEWPORT_02: SWITCHED TO SOLID BODY`);
             }
@@ -708,85 +720,146 @@
             const grid = document.getElementById('measurementsGrid');
             grid.innerHTML = '';
             
-            // Categorize data
-            const dimensions = {};
-            const metadata = {};
-            
-            Object.entries(m).forEach(([key, val]) => {
-                if (typeof val === 'number' && key !== 'final_loss' && key !== 'iterations' && key !== 'total_time') {
-                    dimensions[key] = val;
-                } else {
-                    metadata[key] = val;
-                }
-            });
-
-            // Render Dimensions Section
-            if (Object.keys(dimensions).length > 0) {
-                const header = document.createElement('div');
-                header.className = "col-span-12 mt-2 mb-2 text-[10px] tracking-stealth text-white/20 border-b border-white/5 pb-2";
-                header.textContent = "CORE ANATOMICAL DIMENSIONS";
-                grid.appendChild(header);
-
-                Object.entries(dimensions).forEach(([key, val]) => {
-                    const card = document.createElement('div');
-                    card.className = "col-span-3 measurement-card p-5 rounded-xl flex flex-col gap-1 group";
-                    
-                    const label = document.createElement('span');
-                    label.className = "text-[9px] tracking-stealth text-white/30 group-hover:text-yellow-400/60 transition-all uppercase";
-                    label.textContent = key.replace(/_/g, ' ');
-                    
-                    const valRow = document.createElement('div');
-                    valRow.className = "flex items-baseline gap-1.5";
-                    
-                    const valSpan = document.createElement('span');
-                    valSpan.className = "text-2xl font-outfit font-bold tracking-tight text-white/90";
-                    valSpan.textContent = val.toFixed(1);
-                    
-                    const unit = document.createElement('span');
-                    unit.className = "text-[10px] text-white/20 font-mono";
-                    unit.textContent = "CM";
-                    
-                    valRow.appendChild(valSpan);
-                    valRow.appendChild(unit);
-                    card.appendChild(label);
-                    card.appendChild(valRow);
-                    grid.appendChild(card);
-                });
-            }
-
-            // Render Metadata Section
-            if (Object.keys(metadata).length > 0) {
-                const header = document.createElement('div');
-                header.className = "col-span-12 mt-8 mb-2 text-[10px] tracking-stealth text-white/20 border-b border-white/5 pb-2";
-                header.textContent = "SYNTHESIS KERNEL TELEMETRY";
-                grid.appendChild(header);
-
-                Object.entries(metadata).forEach(([key, val]) => {
-                    const card = document.createElement('div');
-                    card.className = "col-span-4 measurement-card p-4 rounded-xl flex flex-col gap-1.5 bg-white/[0.02]";
-                    
-                    const label = document.createElement('span');
-                    label.className = "text-[8px] tracking-stealth text-white/20 uppercase";
-                    label.textContent = key.replace(/_/g, ' ');
-                    
-                    const valSpan = document.createElement('div');
-                    valSpan.className = "text-[11px] font-mono text-white/60 truncate-stealth";
-                    
-                    if (Array.isArray(val)) {
-                        valSpan.textContent = val.map(v => typeof v === 'number' ? v.toFixed(4) : v).join(', ');
-                        card.title = valSpan.textContent; // Tooltip for full values
-                    } else {
-                        valSpan.textContent = typeof val === 'number' ? val.toFixed(6) : val;
+            const rawData = {};
+            const flatten = (obj) => {
+                if (!obj) return;
+                Object.entries(obj).forEach(([key, val]) => {
+                    if (val !== null && typeof val === 'object' && !Array.isArray(val)) {
+                        flatten(val);
+                    } else if (typeof val === 'number') {
+                        const skip = ['final_loss', 'iterations', 'total_time', 'scale'];
+                        if (!skip.includes(key)) rawData[key] = val;
                     }
-                    
-                    card.appendChild(label);
-                    card.appendChild(valSpan);
-                    grid.appendChild(card);
                 });
-            }
+            };
+            flatten(m);
 
-            lucide.createIcons();
+            const mapping = {
+                "Upper Body": {
+                    "Neck & Shoulders": ["neck_circumference", "shoulder_width", "shoulder_to_shoulder"],
+                    "Chest & Torso": ["chest_circumference", "waist_circumference"],
+                    "Arms": ["arm_length", "bicep_circumference", "forearm_circumference", "wrist_circumference"]
+                },
+                "Lower Body": {
+                    "Hips & Waist": ["hip_circumference", "waist_circumference"], // Waist often needed for both
+                    "Legs": ["leg_length", "thigh_circumference", "calf_circumference", "ankle_circumference"]
+                }
+            };
+
+            // Breadcrumb navigation
+            let currentPath = [];
+
+            const renderMenu = () => {
+                grid.innerHTML = '';
+                
+                // Header / Breadcrumb
+                const breadcrumb = document.createElement('div');
+                breadcrumb.className = "col-span-12 mb-6 flex items-center gap-2 text-[10px] tracking-stealth";
+                
+                const rootBtn = document.createElement('button');
+                rootBtn.className = "text-yellow-400/50 hover:text-yellow-400 transition-colors";
+                rootBtn.textContent = "ANATOMY_ROOT";
+                rootBtn.onclick = () => { currentPath = []; renderMenu(); };
+                breadcrumb.appendChild(rootBtn);
+
+                currentPath.forEach((step, i) => {
+                    const arrow = document.createElement('span');
+                    arrow.className = "text-white/10";
+                    arrow.textContent = " / ";
+                    breadcrumb.appendChild(arrow);
+                    
+                    const stepBtn = document.createElement('button');
+                    stepBtn.className = "text-white/40";
+                    stepBtn.textContent = step.toUpperCase().replace(/_/g, ' ');
+                    breadcrumb.appendChild(stepBtn);
+                });
+                grid.appendChild(breadcrumb);
+
+                let level = mapping;
+                currentPath.forEach(p => level = level[p]);
+
+                if (Array.isArray(level)) {
+                    // Display measurements
+                    level.forEach(key => {
+                        const val = rawData[key];
+                        if (val === undefined) return;
+
+                        const card = document.createElement('div');
+                        card.className = "col-span-4 measurement-card p-6 rounded-xl flex flex-col gap-2 group bg-white/[0.02] border border-white/5 animate-fade-in";
+                        
+                        const label = document.createElement('span');
+                        label.className = "text-[9px] tracking-stealth text-white/30 group-hover:text-yellow-400 transition-all uppercase";
+                        label.textContent = key.replace(/_/g, ' ');
+                        
+                        const valRow = document.createElement('div');
+                        valRow.className = "flex items-baseline gap-2";
+                        
+                        const valSpan = document.createElement('span');
+                        valSpan.className = "text-3xl font-outfit font-bold tracking-tight text-white/90";
+                        valSpan.textContent = val.toFixed(1);
+                        
+                        const unit = document.createElement('span');
+                        unit.className = "text-[10px] text-white/20 font-mono";
+                        unit.textContent = "CM";
+                        
+                        valRow.appendChild(valSpan);
+                        valRow.appendChild(unit);
+                        card.appendChild(label);
+                        card.appendChild(valRow);
+                        grid.appendChild(card);
+                    });
+                } else {
+                    // Display sub-categories
+                    Object.keys(level).forEach(key => {
+                        const card = document.createElement('div');
+                        card.className = "col-span-6 h-32 measurement-card rounded-2xl flex flex-col items-center justify-center gap-4 cursor-pointer hover:border-yellow-400/40 animate-fade-in group";
+                        card.onclick = () => { currentPath.push(key); renderMenu(); };
+                        
+                        const iconDiv = document.createElement('div');
+                        iconDiv.className = "w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-white/20 group-hover:text-yellow-400 group-hover:bg-yellow-400/10 transition-all";
+                        
+                        // Pick icon based on key
+                        let iconName = 'box';
+                        if (key === 'Upper Body') iconName = 'user';
+                        if (key === 'Lower Body') iconName = 'arrow-down';
+                        if (key === 'Arms') iconName = 'activity';
+                        if (key === 'Legs') iconName = 'trending-down';
+                        if (key.includes('Chest')) iconName = 'heart';
+                        if (key.includes('Neck')) iconName = 'circle';
+                        if (key.includes('Hips')) iconName = 'layers';
+
+                        iconDiv.innerHTML = `<i data-lucide="${iconName}" class="w-5 h-5"></i>`;
+                        
+                        const label = document.createElement('span');
+                        label.className = "text-[11px] tracking-stealth text-white/40 group-hover:text-white transition-colors uppercase font-bold";
+                        label.textContent = key;
+                        
+                        card.appendChild(iconDiv);
+                        card.appendChild(label);
+                        grid.appendChild(card);
+                    });
+                }
+                lucide.createIcons();
+            };
+
+            renderMenu();
         }
+
+        // Drop zone drag/drop
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(name => {
+            dropZone.addEventListener(name, (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+            });
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            const dt = e.dataTransfer;
+            if (dt.files[0]) {
+                fileInput.files = dt.files;
+                fileInput.onchange({ target: { files: dt.files } });
+            }
+        });
 
         lucide.createIcons();
     </script>

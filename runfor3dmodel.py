@@ -133,8 +133,8 @@ def main() -> None:
                    help="Skip 3D annotation visualization")
     p.add_argument("--clean", action="store_true",
                    help="Wipe output/ before running")
-    p.add_argument("--ui", action="store_true", default=True,
-                   help="Start the web dashboard automatically (default: True)")
+    p.add_argument("--ui", action="store_true", default=False,
+                   help="Start the web dashboard automatically (default: False)")
     p.add_argument("--no-ui", action="store_false", dest="ui",
                    help="Disable automatic dashboard launch")
     args = p.parse_args()
