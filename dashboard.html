@@ -4,17 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Galatea | Digital Wardrobe Stealth System</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22%23ffd700%22/><path d=%22M30 30h40v40H30z%22 fill=%22black%22/></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
+
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Outfit:wght@300;400;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         :root {
             --primary: #ffd700;
             --accent: #3b82f6;
-            --background: #000000;
+            --background: #020617; /* Deeper midnight blue */
             --foreground: #f8fafc;
-            --glass: rgba(255, 255, 255, 0.03);
-            --border: rgba(255, 255, 255, 0.1);
+            --glass: rgba(255, 255, 255, 0.02);
+            --border: rgba(255, 255, 255, 0.08);
+            --glow: rgba(255, 215, 0, 0.15);
         }
 
         body {
@@ -24,13 +27,14 @@
             margin: 0;
             overflow: hidden;
             height: 100vh;
+            background-image: radial-gradient(circle at 50% -20%, #1e293b 0%, transparent 70%);
         }
 
         .font-outfit { font-family: 'Outfit', sans-serif; }
 
         @keyframes onloadopacity {
-            0% { opacity: 0; }
-            100% { opacity: 1; }
+            0% { opacity: 0; transform: translateY(10px); }
+            100% { opacity: 1; transform: translateY(0); }
         }
 
         @keyframes onloadbg-top {
@@ -43,35 +47,46 @@
             100% { transform: translate(-50%, 64%); opacity: 0.8; }
         }
 
+        @keyframes scanline {
+            0% { top: 0; }
+            100% { top: 100%; }
+        }
+
+        @keyframes heartbeat {
+            0%, 100% { transform: scale(1); opacity: 0.8; }
+            50% { transform: scale(1.2); opacity: 1; }
+        }
+
         .animate-glow-top { animation: onloadbg-top 2s ease-out forwards; }
         .animate-glow-bottom { animation: onloadbg-bottom 2s ease-out forwards; }
-        .animate-fade-in { animation: onloadopacity 1.5s ease-out forwards; }
+        .animate-fade-in { animation: onloadopacity 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .animate-heartbeat { animation: heartbeat 2s ease-in-out infinite; }
 
         .glass {
             background: var(--glass);
             border: 1px solid var(--border);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
+            backdrop-filter: blur(24px) saturate(180%);
+            -webkit-backdrop-filter: blur(24px) saturate(180%);
         }
 
         .tracking-stealth {
-            letter-spacing: 0.25em;
+            letter-spacing: 0.3em;
             text-transform: uppercase;
             font-weight: 700;
-            font-size: 0.65rem;
+            font-size: 0.6rem;
         }
 
         .terminal-text {
             font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-            font-size: 0.7rem;
+            font-size: 0.65rem;
         }
 
         .glow-stealth {
-            filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.3));
+            filter: drop-shadow(0 0 12px rgba(255, 215, 0, 0.4));
         }
 
         /* Hide scrollbars */
-        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar { width: 3px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
@@ -82,11 +97,82 @@
             position: relative;
         }
 
+        .scanning-grid {
+            background-image: 
+                linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 32px 32px;
+            pointer-events: none;
+        }
+
+        .scan-line {
+            position: absolute;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--primary), transparent);
+            box-shadow: 0 0 15px var(--primary);
+            opacity: 0.3;
+            animation: scanline 4s linear infinite;
+            pointer-events: none;
+        }
+
         canvas {
             width: 100% !important;
             height: 100% !important;
             display: block;
         }
+
+        .measurement-card {
+            background: linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.01) 100%);
+            border: 1px solid rgba(255,255,255,0.05);
+            transition: all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+
+        .measurement-card:hover {
+            border-color: rgba(255, 215, 0, 0.4);
+            background: rgba(255, 215, 0, 0.03);
+            transform: translateY(-4px) scale(1.02);
+            box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.5), 0 0 20px rgba(255, 215, 0, 0.05);
+        }
+
+        .toast-container {
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            z-index: 1000;
+        }
+
+        .toast {
+            padding: 1rem 1.5rem;
+            border-radius: 0.75rem;
+            background: rgba(15, 23, 42, 0.9);
+            border: 1px solid var(--border);
+            backdrop-filter: blur(12px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            min-width: 300px;
+            animation: toast-in 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards;
+        }
+
+        @keyframes toast-in {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .truncate-stealth {
+            display: -webkit-box;
+            -webkit-line-clamp: 1;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
     </style>
 </head>
 <body>
@@ -94,8 +180,11 @@
     <div class="absolute top-0 left-1/2 w-[1000px] h-[500px] bg-yellow-500/10 blur-[150px] rounded-full animate-glow-top -z-10"></div>
     <div class="absolute bottom-0 left-1/2 w-[1000px] h-[500px] bg-blue-500/10 blur-[150px] rounded-full animate-glow-bottom -z-10"></div>
 
+    <div class="toast-container" id="toastContainer"></div>
+
     <!-- Main Wrapper -->
     <div class="flex flex-col h-screen animate-fade-in">
+
         <!-- Header -->
         <header class="h-20 border-b border-white/5 flex items-center justify-between px-10 glass z-50">
             <div class="flex items-center gap-4">
@@ -205,36 +294,47 @@
             <div class="col-span-9 grid grid-rows-12 gap-8 h-full overflow-hidden">
                 <div class="row-span-7 grid grid-cols-2 gap-8 overflow-hidden">
                     <!-- Window 1: OG Scan -->
-                    <div class="glass rounded-2xl border border-white/10 relative overflow-hidden flex flex-col">
-                        <div class="h-12 border-b border-white/5 flex items-center justify-between px-6 z-10">
-                            <span class="tracking-stealth text-white/40">VIEWPORT_01: ALIGNED_SCAN</span>
+                    <div class="glass rounded-2xl border border-white/10 relative overflow-hidden flex flex-col group/view">
+                        <div class="h-12 border-b border-white/5 flex items-center justify-between px-6 z-10 bg-white/[0.02]">
+                            <span class="tracking-stealth text-white/40 group-hover/view:text-white/60 transition-colors">VIEWPORT_01: ALIGNED_SCAN</span>
                             <div class="flex gap-1.5">
                                 <div class="w-1.5 h-1.5 rounded-full bg-white/10"></div>
                                 <div class="w-1.5 h-1.5 rounded-full bg-white/10"></div>
                                 <div class="w-1.5 h-1.5 rounded-full bg-white/10"></div>
                             </div>
                         </div>
-                        <div id="viewer1" class="flex-1 three-container bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.02)_0%,transparent_100%)]">
-                            <div id="loader1" class="absolute inset-0 flex items-center justify-center text-white/10 tracking-stealth text-[10px]">AWAITING DATA</div>
+                        <div id="viewer1" class="flex-1 three-container bg-[radial-gradient(circle_at_center,rgba(60,60,255,0.03)_0%,transparent_100%)]">
+                            <div class="absolute inset-0 scanning-grid opacity-20"></div>
+                            <div class="scan-line"></div>
+                            <div id="loader1" class="absolute inset-0 flex flex-col items-center justify-center gap-4 text-white/10 tracking-stealth text-[10px]">
+                                <div class="w-12 h-12 rounded-full border-2 border-dashed border-white/10 animate-[spin_10s_linear_infinite]"></div>
+                                AWAITING_DATA_STREAM
+                            </div>
                         </div>
                     </div>
 
                     <!-- Window 2: Morphed Scan -->
-                    <div class="glass rounded-2xl border border-white/10 relative overflow-hidden flex flex-col shadow-[0_0_50px_rgba(255,215,0,0.05)]">
-                        <div class="h-12 border-b border-white/5 flex items-center justify-between px-6 z-10">
+                    <div class="glass rounded-2xl border border-white/10 relative overflow-hidden flex flex-col shadow-[0_0_50px_rgba(255,215,0,0.03)] group/view">
+                        <div class="h-12 border-b border-white/5 flex items-center justify-between px-6 z-10 bg-white/[0.02]">
                             <div class="flex items-center gap-3">
-                                <span class="tracking-stealth text-yellow-400/60">VIEWPORT_02: MORPHED_BODY_MODEL</span>
+                                <span class="tracking-stealth text-yellow-400/50 group-hover/view:text-yellow-400/80 transition-colors">VIEWPORT_02: MORPHED_BODY_MODEL</span>
                                 <div id="explodedToggle" class="hidden items-center gap-2 px-3 py-1 bg-white/5 rounded-md border border-white/10 hover:border-yellow-400/30 transition-all cursor-pointer" onclick="toggleExploded()">
                                     <div id="toggleCheck" class="w-2.5 h-2.5 rounded-full border border-white/20 bg-transparent transition-all"></div>
                                     <span class="text-[9px] tracking-stealth text-white/40 uppercase">Exploded View</span>
                                 </div>
                             </div>
-                            <i data-lucide="zap" class="w-3 h-3 text-yellow-400/40"></i>
+                            <i data-lucide="zap" class="w-3.5 h-3.5 text-yellow-400/30 group-hover/view:text-yellow-400/60 transition-colors"></i>
                         </div>
-                        <div id="viewer2" class="flex-1 three-container bg-[radial-gradient(circle_at_center,rgba(255,215,0,0.02)_0%,transparent_100%)]">
-                            <div id="loader2" class="absolute inset-0 flex items-center justify-center text-white/10 tracking-stealth text-[10px]">AWAITING SYNTHESIS</div>
+                        <div id="viewer2" class="flex-1 three-container bg-[radial-gradient(circle_at_center,rgba(255,215,0,0.03)_0%,transparent_100%)]">
+                            <div class="absolute inset-0 scanning-grid opacity-10"></div>
+                            <div class="scan-line" style="animation-delay: -2s;"></div>
+                            <div id="loader2" class="absolute inset-0 flex flex-col items-center justify-center gap-4 text-white/10 tracking-stealth text-[10px]">
+                                <div class="w-12 h-12 rounded-full border-2 border-dashed border-white/10 animate-[spin_10s_linear_infinite_reverse]"></div>
+                                AWAITING_SYNTHESIS
+                            </div>
                         </div>
                     </div>
+
                 </div>
 
                 <!-- Window 3: Measurements -->
@@ -251,10 +351,11 @@
                         </div>
                     </div>
 
-                    <div id="measurementsGrid" class="flex-1 grid grid-cols-4 gap-6 overflow-y-auto pr-6 custom-scroll">
+                    <div id="measurementsGrid" class="flex-1 grid grid-cols-12 gap-6 overflow-y-auto pr-6 custom-scroll">
                         <!-- Placeholder -->
-                        <div class="col-span-4 h-full flex items-center justify-center border border-dashed border-white/5 rounded-2xl text-white/10 tracking-stealth text-sm italic">
-                            Waiting for model generation to extract dimensions...
+                        <div class="col-span-12 h-full flex flex-col items-center justify-center border border-dashed border-white/5 rounded-2xl text-white/10 tracking-stealth gap-4">
+                            <i data-lucide="layers" class="w-8 h-8 opacity-20"></i>
+                            <span class="text-xs">Awaiting synthesis completion to populate anatomical data...</span>
                         </div>
                     </div>
                 </div>
@@ -315,13 +416,49 @@
             log(`[INFO] GENDER_OVERRIDE SET TO: ${g.toUpperCase()}`);
         };
 
+        const showToast = (message, type = 'info') => {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type === 'error' ? 'border-red-500/30' : type === 'success' ? 'border-green-500/30' : 'border-white/10'}`;
+            
+            const icon = document.createElement('i');
+            icon.setAttribute('data-lucide', type === 'error' ? 'alert-circle' : type === 'success' ? 'check-circle' : 'info');
+            icon.className = `w-5 h-5 ${type === 'error' ? 'text-red-400' : type === 'success' ? 'text-green-400' : 'text-blue-400'}`;
+            
+            const text = document.createElement('span');
+            text.className = 'text-sm font-medium tracking-tight text-white/80';
+            text.textContent = message;
+            
+            toast.appendChild(icon);
+            toast.appendChild(text);
+            container.appendChild(toast);
+            
+            lucide.createIcons();
+            
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(100%)';
+                toast.style.transition = 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
+                setTimeout(() => toast.remove(), 400);
+            }, 4000);
+        };
+
         const log = (msg, type = 'default') => {
             const tel = document.getElementById('telemetry');
             const p = document.createElement('p');
             p.textContent = msg;
-            if (type === 'error') p.className = 'text-red-400';
-            if (type === 'success') p.className = 'text-green-400';
-            if (type === 'process') p.className = 'text-yellow-400 animate-pulse';
+            if (type === 'error') {
+                p.className = 'text-red-400';
+                showToast(msg.replace(/\[ERROR\]\s*/, ''), 'error');
+            }
+            if (type === 'success') {
+                p.className = 'text-green-400';
+                showToast(msg.replace(/\[OK\]\s*/, ''), 'success');
+            }
+            if (type === 'process') {
+                p.className = 'text-yellow-400 animate-pulse';
+                showToast(msg.replace(/\[PROCESS\]\s*/, ''), 'info');
+            }
             tel.appendChild(p);
             tel.scrollTop = tel.scrollHeight;
         };
@@ -335,16 +472,18 @@
                 this.camera.position.set(0, 0, 3);
                 
                 this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+                this.renderer.setPixelRatio(window.devicePixelRatio);
                 this.renderer.setSize(this.container.clientWidth, this.container.clientHeight);
                 this.container.appendChild(this.renderer.domElement);
                 
                 this.controls = new OrbitControls(this.camera, this.renderer.domElement);
                 this.controls.enableDamping = true;
+                this.controls.dampingFactor = 0.05;
                 
-                const ambient = new THREE.AmbientLight(0xffffff, 0.6);
+                const ambient = new THREE.AmbientLight(0xffffff, 0.8);
                 this.scene.add(ambient);
                 
-                const point = new THREE.PointLight(0xffffff, 1.2);
+                const point = new THREE.PointLight(0xffffff, 1.5);
                 this.camera.add(point);
                 this.scene.add(this.camera);
                 
@@ -379,8 +518,8 @@
                         if (child.isMesh) {
                             child.material = new THREE.MeshStandardMaterial({
                                 color: self.color,
-                                roughness: 0.4,
-                                metalness: 0.3,
+                                roughness: 0.3,
+                                metalness: 0.4,
                                 wireframe: false
                             });
                         }
@@ -388,12 +527,31 @@
                     
                     self.scene.add(obj);
                     self.model = obj;
+                    
+                    // Add subtle entry animation
+                    obj.scale.set(0,0,0);
+                    let s = 0;
+                    const grow = () => {
+                        s += 0.05;
+                        if (s < 1) {
+                            obj.scale.set(s,s,s);
+                            requestAnimationFrame(grow);
+                        } else {
+                            obj.scale.set(1,1,1);
+                        }
+                    }
+                    grow();
+                }, (xhr) => {
+                    // Optional: Handle loading progress
+                }, (err) => {
+                    console.error('Error loading OBJ:', err);
+                    log(`[ERROR] FAILED TO LOAD 3D MODEL`, 'error');
                 });
             }
         }
 
         // Init viewers
-        v1 = new Viewer('viewer1', 0x4f46e5);
+        v1 = new Viewer('viewer1', 0x3b82f6);
         v2 = new Viewer('viewer2', 0xfacc15);
 
         // File handling
@@ -409,10 +567,10 @@
             if (e.target.files[0]) {
                 currentFile = e.target.files[0];
                 document.getElementById('fileName').textContent = currentFile.name;
-                document.getElementById('runHint').textContent = "SYSTEM READY - READY TO SYNTHESIZE";
-                document.getElementById('runHint').className = "text-[9px] text-center text-green-500 tracking-stealth animate-pulse";
+                document.getElementById('runHint').textContent = "READY FOR SYNTHESIS";
+                document.getElementById('runHint').className = "text-[9px] text-center text-yellow-400/80 tracking-stealth animate-pulse";
                 runBtn.disabled = false;
-                runBtn.className = "w-full py-5 rounded-xl bg-yellow-400 text-black tracking-stealth text-[11px] font-black border border-yellow-400 transition-all flex items-center justify-center gap-3 shadow-[0_0_30px_rgba(255,215,0,0.2)] hover:scale-[1.02] active:scale-95 group/btn overflow-hidden relative";
+                runBtn.className = "w-full py-5 rounded-xl bg-yellow-400 text-black tracking-stealth text-[11px] font-black border border-yellow-400 transition-all flex items-center justify-center gap-3 shadow-[0_0_30px_rgba(255,215,0,0.15)] hover:scale-[1.02] active:scale-95 group/btn overflow-hidden relative";
                 log(`[FILE] LOADED: ${currentFile.name.toUpperCase()}`);
             }
         };
@@ -420,10 +578,10 @@
         window.runPipeline = async () => {
             if (!currentFile) return;
             
-            log(`[PROCESS] INITIATING PIPELINE (GENDER: ${currentGender.toUpperCase()})...`, 'process');
+            log(`[PROCESS] INITIATING PIPELINE...`, 'process');
             runBtn.disabled = true;
-            runBtnText.textContent = "ENGINE ACTIVE";
-            btnGlow.style.opacity = '0.1';
+            runBtnText.textContent = "ENGINE_RUNNING";
+            btnGlow.style.opacity = '0.05';
             
             // Show status overlay
             const statusOverlay = document.getElementById('statusOverlay');
@@ -432,8 +590,8 @@
             const timer = document.getElementById('timer');
             
             statusOverlay.classList.remove('hidden');
-            statusText.textContent = "Initializing SMPL-X Engine...";
-            progressBar.style.width = '10%';
+            statusText.textContent = "Booting Synthesis Kernel...";
+            progressBar.style.width = '5%';
             
             startTime = Date.now();
             timerInterval = setInterval(() => {
@@ -442,10 +600,13 @@
                 const secs = (elapsed % 60).toString().padStart(2, '0');
                 timer.textContent = `${mins}:${secs}`;
                 
-                // Simulated progress steps
-                if (elapsed > 5) {
-                    statusText.textContent = "Fitting 3D Body Mesh (may take 3-4 mins)...";
-                    progressBar.style.width = Math.min(90, 10 + (elapsed / 200) * 80) + '%';
+                // Simulated progress steps for better UX
+                if (elapsed > 2 && elapsed < 8) {
+                    statusText.textContent = "Analyzing Topology & Vertex Data...";
+                    progressBar.style.width = '15%';
+                } else if (elapsed >= 8) {
+                    statusText.textContent = "SMPL-X Mesh Optimization In Progress...";
+                    progressBar.style.width = Math.min(95, 15 + (elapsed / 240) * 80) + '%';
                 }
             }, 1000);
             
@@ -458,44 +619,55 @@
                     method: 'POST',
                     body: formData
                 });
+                
+                if (!response.ok) throw new Error('API_REJECTED');
+                
                 const data = await response.json();
                 
                 if (data.status === 'success') {
                     lastResult = data;
-                    log(`[OK] PIPELINE COMPLETE`, 'success');
+                    log(`[OK] SYNTHESIS COMPLETE`, 'success');
                     
                     v1.load(data.og_scan);
-                    // Load solid by default
                     v2.load(data.morphed_model);
                     isExploded = false;
                     
-                    document.getElementById('loader1').style.display = 'none';
-                    document.getElementById('loader2').style.display = 'none';
+                    document.getElementById('loader1').style.opacity = '0';
+                    document.getElementById('loader2').style.opacity = '0';
+                    setTimeout(() => {
+                        document.getElementById('loader1').style.display = 'none';
+                        document.getElementById('loader2').style.display = 'none';
+                    }, 500);
+                    
                     document.getElementById('explodedToggle').classList.remove('hidden');
                     document.getElementById('explodedToggle').classList.add('flex');
                     
                     renderMeasurements(data.measurements);
                     
-                    statusText.textContent = "Processing Finished.";
+                    statusText.textContent = "Pipeline Finalized.";
                     progressBar.style.width = '100%';
                     progressBar.classList.replace('bg-yellow-400', 'bg-green-500');
                 } else {
-                    log(`[ERROR] ${data.details || 'PIPELINE FAILED'}`, 'error');
-                    statusText.textContent = "Pipeline Error.";
-                    progressBar.classList.replace('bg-yellow-400', 'bg-red-500');
+                    throw new Error(data.details || 'INTERNAL_ERROR');
                 }
             } catch (err) {
-                log(`[ERROR] NETWORK_OR_SERVER_FAILURE`, 'error');
-                statusText.textContent = "Server Timeout.";
+                log(`[ERROR] ${err.message}`, 'error');
+                statusText.textContent = "System Error.";
+                progressBar.classList.replace('bg-yellow-400', 'bg-red-500');
                 console.error(err);
             } finally {
                 clearInterval(timerInterval);
                 runBtn.disabled = false;
-                runBtnText.textContent = "RUN AGAIN";
+                runBtnText.textContent = "RE-INITIALIZE";
                 btnGlow.style.opacity = '0';
-                setTimeout(() => statusOverlay.classList.add('hidden'), 5000);
+                setTimeout(() => {
+                    statusOverlay.classList.add('hidden');
+                    progressBar.classList.remove('bg-green-500', 'bg-red-500');
+                    progressBar.classList.add('bg-yellow-400');
+                }, 8000);
             }
         };
+
 
         window.toggleExploded = () => {
             if (!lastResult) {
@@ -536,31 +708,84 @@
             const grid = document.getElementById('measurementsGrid');
             grid.innerHTML = '';
             
+            // Categorize data
+            const dimensions = {};
+            const metadata = {};
+            
             Object.entries(m).forEach(([key, val]) => {
-                const card = document.createElement('div');
-                card.className = "bg-white/5 p-5 rounded-xl border border-white/5 flex flex-col gap-2 hover:border-blue-500/30 transition-all group";
-                
-                const label = document.createElement('span');
-                label.className = "text-[9px] tracking-stealth text-white/30 group-hover:text-blue-400/50 transition-all";
-                label.textContent = key.replace(/_/g, ' ');
-                
-                const valRow = document.createElement('div');
-                valRow.className = "flex items-baseline gap-1";
-                
-                const valSpan = document.createElement('span');
-                valSpan.className = "text-xl font-bold font-mono tracking-tighter";
-                valSpan.textContent = typeof val === 'number' ? val.toFixed(1) : val;
-                
-                const unit = document.createElement('span');
-                unit.className = "text-[9px] text-white/10 font-mono";
-                unit.textContent = "CM";
-                
-                valRow.appendChild(valSpan);
-                valRow.appendChild(unit);
-                card.appendChild(label);
-                card.appendChild(valRow);
-                grid.appendChild(card);
+                if (typeof val === 'number' && key !== 'final_loss' && key !== 'iterations' && key !== 'total_time') {
+                    dimensions[key] = val;
+                } else {
+                    metadata[key] = val;
+                }
             });
+
+            // Render Dimensions Section
+            if (Object.keys(dimensions).length > 0) {
+                const header = document.createElement('div');
+                header.className = "col-span-12 mt-2 mb-2 text-[10px] tracking-stealth text-white/20 border-b border-white/5 pb-2";
+                header.textContent = "CORE ANATOMICAL DIMENSIONS";
+                grid.appendChild(header);
+
+                Object.entries(dimensions).forEach(([key, val]) => {
+                    const card = document.createElement('div');
+                    card.className = "col-span-3 measurement-card p-5 rounded-xl flex flex-col gap-1 group";
+                    
+                    const label = document.createElement('span');
+                    label.className = "text-[9px] tracking-stealth text-white/30 group-hover:text-yellow-400/60 transition-all uppercase";
+                    label.textContent = key.replace(/_/g, ' ');
+                    
+                    const valRow = document.createElement('div');
+                    valRow.className = "flex items-baseline gap-1.5";
+                    
+                    const valSpan = document.createElement('span');
+                    valSpan.className = "text-2xl font-outfit font-bold tracking-tight text-white/90";
+                    valSpan.textContent = val.toFixed(1);
+                    
+                    const unit = document.createElement('span');
+                    unit.className = "text-[10px] text-white/20 font-mono";
+                    unit.textContent = "CM";
+                    
+                    valRow.appendChild(valSpan);
+                    valRow.appendChild(unit);
+                    card.appendChild(label);
+                    card.appendChild(valRow);
+                    grid.appendChild(card);
+                });
+            }
+
+            // Render Metadata Section
+            if (Object.keys(metadata).length > 0) {
+                const header = document.createElement('div');
+                header.className = "col-span-12 mt-8 mb-2 text-[10px] tracking-stealth text-white/20 border-b border-white/5 pb-2";
+                header.textContent = "SYNTHESIS KERNEL TELEMETRY";
+                grid.appendChild(header);
+
+                Object.entries(metadata).forEach(([key, val]) => {
+                    const card = document.createElement('div');
+                    card.className = "col-span-4 measurement-card p-4 rounded-xl flex flex-col gap-1.5 bg-white/[0.02]";
+                    
+                    const label = document.createElement('span');
+                    label.className = "text-[8px] tracking-stealth text-white/20 uppercase";
+                    label.textContent = key.replace(/_/g, ' ');
+                    
+                    const valSpan = document.createElement('div');
+                    valSpan.className = "text-[11px] font-mono text-white/60 truncate-stealth";
+                    
+                    if (Array.isArray(val)) {
+                        valSpan.textContent = val.map(v => typeof v === 'number' ? v.toFixed(4) : v).join(', ');
+                        card.title = valSpan.textContent; // Tooltip for full values
+                    } else {
+                        valSpan.textContent = typeof val === 'number' ? val.toFixed(6) : val;
+                    }
+                    
+                    card.appendChild(label);
+                    card.appendChild(valSpan);
+                    grid.appendChild(card);
+                });
+            }
+
+            lucide.createIcons();
         }
 
         lucide.createIcons();
