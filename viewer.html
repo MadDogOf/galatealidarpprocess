@@ -1,20 +1,80 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Galatea 3D Viewer</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    <title>Galatea | 3D Twin Viewer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Outfit:wght@300;400;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        body { margin: 0; background-color: #111; color: #fff; font-family: sans-serif; overflow: hidden; }
-        #info { position: absolute; top: 10px; width: 100%; text-align: center; z-index: 100; pointer-events: none; }
-        #controls { position: absolute; bottom: 20px; left: 20px; background: rgba(0,0,0,0.5); padding: 10px; border-radius: 8px; }
+        :root {
+            --background: #020617;
+            --foreground: #f8fafc;
+            --primary: #ffd700;
+            --border: rgba(255, 255, 255, 0.08);
+        }
+
+        body { 
+            margin: 0; 
+            background-color: var(--background); 
+            color: var(--foreground); 
+            font-family: 'Inter', sans-serif; 
+            overflow: hidden; 
+            background-image: radial-gradient(circle at 50% -20%, #1e293b 0%, transparent 70%);
+        }
+
+        #info { 
+            position: absolute; 
+            top: 2rem; 
+            width: 100%; 
+            text-align: center; 
+            z-index: 100; 
+            pointer-events: none; 
+            text-transform: uppercase;
+            letter-spacing: 0.3em;
+            font-size: 0.65rem;
+            font-weight: 700;
+            opacity: 0.4;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        #controls { 
+            position: absolute; 
+            bottom: 2rem; 
+            left: 2rem; 
+            background: rgba(255, 255, 255, 0.02); 
+            padding: 1.5rem; 
+            border-radius: 1rem; 
+            border: 1px solid var(--border);
+            backdrop-filter: blur(12px);
+            font-size: 0.7rem;
+            letter-spacing: 0.05em;
+            color: rgba(255,255,255,0.4);
+            font-family: ui-monospace, monospace;
+        }
+
+        #controls span { color: var(--primary); font-weight: bold; }
+
         canvas { display: block; }
+
+        .scanning-grid {
+            position: absolute;
+            inset: 0;
+            background-image: 
+                linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+            z-index: 1;
+        }
     </style>
 </head>
 <body>
-    <div id="info">Galatea Digital Twin Viewer<br/>Drag to rotate | Scroll to zoom</div>
+    <div class="scanning-grid"></div>
+    <div id="info">Galatea Digital Twin System // Navigation: Drag to Orbit | Scroll to Depth</div>
     <div id="controls">
-        File: output/sample.obj
+        FILE_LOC: <span>output/sample.obj</span><br/>
+        STATUS: ONLINE
     </div>
 
     <script type="importmap">
@@ -38,7 +98,6 @@
 
         function init() {
             scene = new THREE.Scene();
-            scene.background = new THREE.Color(0x1a1a1a);
 
             camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
             camera.position.z = 3;
@@ -52,7 +111,7 @@
             scene.add(camera);
 
             // Renderer
-            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
             renderer.setPixelRatio(window.devicePixelRatio);
             renderer.setSize(window.innerWidth, window.innerHeight);
             document.body.appendChild(renderer.domElement);
@@ -60,31 +119,41 @@
             // Controls
             controls = new OrbitControls(camera, renderer.domElement);
             controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
 
             // Load OBJ
             const loader = new OBJLoader();
             loader.load('output/sample.obj', function (obj) {
-                // Center the object
                 const box = new THREE.Box3().setFromObject(obj);
                 const center = box.getCenter(new THREE.Vector3());
                 obj.position.sub(center);
                 
-                // Add material
                 obj.traverse(function (child) {
                     if (child.isMesh) {
                         child.material = new THREE.MeshStandardMaterial({ 
-                            color: 0x8888ff,
-                            roughness: 0.5,
-                            metalness: 0.2
+                            color: 0xffd700,
+                            roughness: 0.3,
+                            metalness: 0.4
                         });
                     }
                 });
                 
                 scene.add(obj);
-                console.log('Model loaded');
-            }, 
-            (xhr) => console.log((xhr.loaded / xhr.total * 100) + '% loaded'),
-            (error) => console.error('An error happened', error));
+                
+                // Entrance animation
+                obj.scale.set(0,0,0);
+                let s = 0;
+                const grow = () => {
+                    s += 0.05;
+                    if (s < 1) {
+                        obj.scale.set(s,s,s);
+                        requestAnimationFrame(grow);
+                    } else {
+                        obj.scale.set(1,1,1);
+                    }
+                }
+                grow();
+            });
 
             window.addEventListener('resize', onWindowResize);
         }
@@ -103,3 +172,4 @@
     </script>
 </body>
 </html>
+
