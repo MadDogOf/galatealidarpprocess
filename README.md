@@ -29,26 +29,34 @@ If you are cloning this repository for the first time, follow these steps to ens
 ### 1. Git LFS (Large File Storage)
 This project uses **Git LFS** to manage large model files (SMPL-X weights in `.npz` format). 
 
-#### **How Git LFS works in this project:**
-*   **The `.gitattributes` file:** This file tells Git which extensions (like `*.npz`, `*.pkl`, and `*.zip`) should be handled by LFS rather than standard Git.
-*   **Pointers vs. Blobs:** In your local folder, these large files initially appear as tiny "pointer" files (only a few bytes). They contain a unique ID (hash) but no actual model data.
-*   **The "Pull" phase:** When you run `git lfs pull`, the LFS client reads those IDs, connects to GitHub's specialized LFS storage, and downloads the actual multi-megabyte "blobs" to replace the pointers.
+> [!IMPORTANT]
+> If you see small files (KB range) instead of multi-megabyte model files in `smplx_models/`, you haven't pulled the LFS blobs yet.
 
-**Windows Setup:**
-1. Download and install from [git-lfs.github.com](https://git-lfs.github.com).
-2. Open your terminal (PowerShell or CMD) and run:
-   ```powershell
-   git lfs install
-   git lfs pull
-   ```
+#### **Quick Installation**
 
-**Linux Setup:**
-1. Install the client: `sudo apt install git-lfs` (or your distro's equivalent).
-2. Run:
-   ```bash
-   git lfs install
-   git lfs pull
-   ```
+| Platform | Command / Link |
+| :--- | :--- |
+| **macOS** | `brew install git-lfs` |
+| **Windows** | [Download Installer](https://git-lfs.github.com) |
+| **Linux** | `sudo apt install git-lfs` |
+
+#### **Initialization Steps**
+After installing the client, run these commands in the project root:
+
+```bash
+# 1. Initialize LFS in your git environment
+git lfs install
+
+# 2. Download the actual model files (blobs)
+git lfs pull
+```
+
+#### **Troubleshooting: "No space left on device"**
+The SMPL-X models require approximately **1.5 GB** of free disk space. If `git lfs pull` fails due to disk space:
+1. Ensure you have at least 2GB of free space.
+2. Run `git gc --prune=now` to clean up git overhead.
+3. Retry `git lfs pull`.
+
 
 ### 2. Python Environment & Dependencies
 We recommend using a virtual environment to avoid conflicts.
