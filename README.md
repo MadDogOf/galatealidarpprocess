@@ -22,45 +22,56 @@ directly on the mesh geometry of a single OBJ file.
 
 ---
 
-## 🚀 Installation & Setup
+## 🚀 Quick Start: Installation & Setup
+
+If you are cloning this repository for the first time, follow these steps to ensure the 3D models and dependencies are correctly initialized.
 
 ### 1. Git LFS (Large File Storage)
-This project uses Git LFS to manage large model files (SMPL-X weights in `.npz` format). Ensure you have Git LFS installed before cloning or pulling.
+This project uses **Git LFS** to manage large model files (SMPL-X weights in `.npz` format). 
 
-**macOS:**
+#### **How Git LFS works in this project:**
+*   **The `.gitattributes` file:** This file tells Git which extensions (like `*.npz`, `*.pkl`, and `*.zip`) should be handled by LFS rather than standard Git.
+*   **Pointers vs. Blobs:** In your local folder, these large files initially appear as tiny "pointer" files (only a few bytes). They contain a unique ID (hash) but no actual model data.
+*   **The "Pull" phase:** When you run `git lfs pull`, the LFS client reads those IDs, connects to GitHub's specialized LFS storage, and downloads the actual multi-megabyte "blobs" to replace the pointers.
+
+**Windows Setup:**
+1. Download and install from [git-lfs.github.com](https://git-lfs.github.com).
+2. Open your terminal (PowerShell or CMD) and run:
+   ```powershell
+   git lfs install
+   git lfs pull
+   ```
+
+**Linux Setup:**
+1. Install the client: `sudo apt install git-lfs` (or your distro's equivalent).
+2. Run:
+   ```bash
+   git lfs install
+   git lfs pull
+   ```
+
+### 2. Python Environment & Dependencies
+We recommend using a virtual environment to avoid conflicts.
+
 ```bash
-brew install git-lfs
-git lfs install
+# Create and activate environment
+python -m venv venv
+source venv/bin/activate  # Linux/macOS
+.\venv\Scripts\activate   # Windows
+
+# Install all packages
+pip install -r requirements.txt
 ```
 
-**Windows:**
-Download and install from [git-lfs.github.com](https://git-lfs.github.com), then run:
-```bash
-git lfs install
-```
+### 3. How to Run
+We provide automated scripts to start the full system (Backend API + 3D Dashboard).
 
-After cloning, ensure all large files are downloaded:
-```bash
-git lfs pull
-```
+*   **Windows:** Run `.\run.bat`
+*   **Linux/macOS:** Run `./run.sh` or `python run.py sh sun.sh`
 
-### 2. Python Environment
-Install the required dependencies:
-```bash
-pip install trimesh numpy scipy shapely torch
-```
-
-Tested with NumPy 2.x, Python 3.10+.
+Once running, the dashboard will automatically open in your browser at `http://localhost:5001`.
 
 ---
-
-## Requirements
-
-```bash
-pip install trimesh numpy scipy shapely
-```
-
-Tested with NumPy 2.x, Python 3.10+.
 
 ---
 
