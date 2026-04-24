@@ -255,7 +255,7 @@ def fit_smplx(
         "body_pose":      body_pose.detach().cpu().numpy().flatten().tolist(),
         "global_orient":  global_orient.detach().cpu().numpy().flatten().tolist(),
         "transl":         transl.detach().cpu().numpy().flatten().tolist(),
-        "scale":          float(torch.exp(scale_log)),
+        "scale":          float(torch.exp(scale_log).detach()),
         "final_loss":     float(losses[-1]),
         "iterations":     iters,
         "gender":         gender,
@@ -279,7 +279,8 @@ def _contour_perimeters(mesh: trimesh.Trimesh,
     if sec is None or len(sec.entities) == 0:
         return []
     try:
-        p2, _ = sec.to_planar()
+        # Use to_2D() instead of deprecated to_planar()
+        p2, _ = sec.to_2D()
     except Exception:
         return []
     if p2 is None:

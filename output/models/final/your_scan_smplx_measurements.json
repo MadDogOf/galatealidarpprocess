@@ -1,23 +1,23 @@
 {
-  "source": "your_scan.obj",
+  "source": "your_scan_aligned.obj",
   "method": "smplx_fit",
   "gender": "male",
   "units": "cm",
-  "final_loss": 0.0007582945399917662,
+  "final_loss": 0.0007582964608445764,
   "iterations": 400,
   "betas": [
     0.0043,
-    0.0559,
+    0.056,
     0.0265,
     -0.0024,
     -0.0062,
     -0.0082,
-    -0.0071,
+    -0.007,
     0.003,
     0.0046,
     0.0013
   ],
-  "scale": 1.0523,
+  "scale": 1.0524,
   "measurements": {
     "global": {
       "height": 187.6
@@ -26,8 +26,8 @@
       "across_shoulder": 39.7,
       "shoulder_width": 19.8,
       "front_inner_shoulder": 41.6,
-      "chest": 114.8,
-      "bust_size": 114.8,
+      "chest": 114.9,
+      "bust_size": 114.9,
       "underbust": 109.9,
       "neck_to_waist": 28.5
     },
@@ -58,14 +58,14 @@
     }
   },
   "slice_z_m": {
-    "ankle": 0.0821,
-    "calf": 0.29825,
-    "thigh": 0.72497,
-    "high_hip": 1.03624,
-    "hip": 0.93554,
-    "waist": 1.30558,
-    "underbust": 1.34529,
-    "chest": 1.38585,
-    "neck": 1.63158
+    "ankle": 0.08065,
+    "calf": 0.2968,
+    "thigh": 0.72353,
+    "high_hip": 1.0348,
+    "hip": 0.93409,
+    "waist": 1.30414,
+    "underbust": 1.34386,
+    "chest": 1.38442,
+    "neck": 1.63015
   }
 }

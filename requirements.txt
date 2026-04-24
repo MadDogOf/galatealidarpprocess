@@ -7,6 +7,7 @@ human_body_prior
 
 # 3D Processing & Visualization
 trimesh
+shapely
 # pyrender (often hard to install on Windows, let's skip for headless fitting)
 opencv-python
 numpy
