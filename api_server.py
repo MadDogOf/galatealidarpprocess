@@ -5,6 +5,7 @@ import subprocess
 import sys
 import json
 from pathlib import Path
+from backend.generate_pdf import generate_pdf
 
 app = Flask(__name__)
 CORS(app)
@@ -56,12 +57,19 @@ def upload_file():
         json_path = OUTPUT_DIR / "uploaded_scan_smplx_measurements.json"
         
         measurements = {}
+        pdf_url = ""
         if json_path.exists():
             with open(json_path, 'r') as f:
                 measurements = json.load(f)
+            
+            # Generate PDF
+            pdf_out = generate_pdf(str(json_path), str(OUTPUT_DIR), "uploaded_scan_smplx", gender)
+            if pdf_out:
+                pdf_url = "/files/output/models/final/uploaded_scan_smplx_measurements.pdf"
         
         # Return both solid and exploded versions for the frontend to toggle
         morphed_path = "/files/output/models/final/uploaded_scan_smplx_measurements.obj"
+        fbx_path = "/files/output/models/final/uploaded_scan_smplx_measurements.fbx"
         exploded_path = "/files/output/models/final/uploaded_scan_smplx_measurements_exploded.obj"
         
         # Filter technical slice data from measurements to keep UI clean
@@ -72,7 +80,9 @@ def upload_file():
             "raw_scan": "/files/input/models/uploaded_scan.obj",
             "og_scan": "/files/output/models/aligned/uploaded_scan_aligned.obj",
             "morphed_model": morphed_path,
+            "fbx_model": fbx_path,
             "exploded_model": exploded_path,
+            "pdf_model": pdf_url,
             "measurements": ui_measurements
         })
 

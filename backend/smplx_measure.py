@@ -54,6 +54,128 @@ DEFAULT_OUTDIR  = ROOT / "output" / "models" / "final"
 
 
 # ─────────────────────────────────────────────────────────────────────────────
+# ─────────────────────────────────────────────────────────────────────────────
+# FBX Export (ASCII)
+# ─────────────────────────────────────────────────────────────────────────────
+
+def save_fbx_ascii(vertices: np.ndarray, faces: np.ndarray, output_path: Path):
+    """
+    Exports the mesh as an FBX ASCII file. 
+    This is a text-based format that most 3D tools (Unity, Unreal, Blender) can read.
+    """
+    import datetime
+    now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    
+    # Flatten vertices and faces
+    v_flat = vertices.flatten()
+    # FBX expects faces as indices where the last index of each polygon is (index * -1) - 1
+    # For triangles (a, b, c) -> a, b, (-c - 1)
+    f_fbx = []
+    for f in faces:
+        f_fbx.extend([int(f[0]), int(f[1]), int(-f[2] - 1)])
+
+    v_str = ",".join(map(lambda x: f"{x:.6f}", v_flat))
+    f_str = ",".join(map(str, f_fbx))
+
+    fbx_template = f"""; FBX 7.4.0 project file
+; Created by Galatea Vision System
+
+FBXHeaderExtension:  {{
+    FBXHeaderVersion: 1003
+    FBXVersion: 7400
+    CreationTimeStamp:  {{
+        Version: 1000
+        Year: 2026
+        Month: 4
+        Day: 26
+        Hour: 12
+        Minute: 0
+        Second: 0
+        Millisecond: 0
+    }}
+    Creator: "Galatea Vision"
+    SceneInfo: "SceneInfo::GlobalInfo", "UserData" {{
+        Type: "UserData"
+        Version: 100
+        MetaData:  {{
+            Version: 100
+            Title: "SMPL-X Digital Twin"
+            Author: "Galatea"
+        }}
+    }}
+}}
+
+GlobalSettings:  {{
+    Version: 1000
+    Properties70:  {{
+        P: "UpAxis", "int", "Integer", "", 1
+        P: "UpAxisSign", "int", "Integer", "", 1
+        P: "FrontAxis", "int", "Integer", "", 2
+        P: "FrontAxisSign", "int", "Integer", "", 1
+        P: "CoordAxis", "int", "Integer", "", 0
+        P: "CoordAxisSign", "int", "Integer", "", 1
+        P: "OriginalUpAxis", "int", "Integer", "", 1
+        P: "OriginalUpAxisSign", "int", "Integer", "", 1
+        P: "UnitScaleFactor", "double", "Number", "", 100.0
+    }}
+}}
+
+Documents:  {{
+    Count: 1
+    Document: 123456789, "", "Scene" {{
+    }}
+}}
+
+References:  {{
+}}
+
+Definitions:  {{
+    Version: 100
+    Count: 2
+    ObjectType: "Model" {{
+        Count: 1
+    }}
+    ObjectType: "Geometry" {{
+        Count: 1
+    }}
+}}
+
+Objects:  {{
+    Geometry: 2000000, "Geometry::Mesh", "Mesh" {{
+        Vertices: *{len(v_flat)} {{
+            a: {v_str}
+        }} 
+        PolygonVertexIndex: *{len(f_fbx)} {{
+            a: {f_str}
+        }} 
+        GeometryVersion: 124
+    }}
+
+    Model: 1000000, "Model::SMPLX_Model", "Mesh" {{
+        Version: 232
+        Properties70:  {{
+            P: "InheritType", "enum", "", "", 1
+            P: "ScalingMax", "Vector3D", "Vector", "", 0, 0, 0
+            P: "DefaultAttributeIndex", "int", "Integer", "", 0
+            P: "Lcl Translation", "Lcl Translation", "", "A", 0, 0, 0
+            P: "Lcl Rotation", "Lcl Rotation", "", "A", 0, 0, 0
+            P: "Lcl Scaling", "Lcl Scaling", "", "A", 1, 1, 1
+        }}
+        Shading: T
+        Culling: "CullingOff"
+    }}
+}}
+
+Connections:  {{
+    ; Connect Geometry to Model
+    C: "OO", 2000000, 1000000
+    ; Connect Model to Root
+    C: "OO", 1000000, 0
+}}
+"""
+    output_path.write_text(fbx_template, encoding="utf-8")
+
+
 # SMPL-X joint indices (body joints, first 22)
 # ─────────────────────────────────────────────────────────────────────────────
 J = {
@@ -655,6 +777,14 @@ def run(obj_path: str,
         )
         out_obj.write_text(obj_text, encoding="utf-8")
         print(f"Fitted SMPL-X OBJ  : {out_obj}  (Z-up, matches aligned scan)")
+
+        # Export FBX
+        out_fbx = out_json.with_suffix(".fbx")
+        try:
+            save_fbx_ascii(fit["vertices"], fit["faces"], out_fbx)
+            print(f"Fitted SMPL-X FBX  : {out_fbx}  (ASCII format, Z-up)")
+        except Exception as e:
+            print(f"[WARN] FBX export failed: {e}")
 
     return doc
 
