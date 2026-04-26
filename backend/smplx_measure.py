@@ -75,15 +75,29 @@ def save_fbx_ascii(vertices: np.ndarray, faces: np.ndarray, joints: np.ndarray, 
         "R_Index1", "R_Index2", "R_Index3", "R_Middle1", "R_Middle2", "R_Middle3", "R_Pinky1", "R_Pinky2", "R_Pinky3", "R_Ring1",
         "R_Ring2", "R_Ring3", "R_Thumb1", "R_Thumb2", "R_Thumb3"
     ]
+    
+    BONE_MAP = {
+        "Pelvis": "mixamorig:Hips",
+        "L_Hip": "mixamorig:LeftUpLeg", "R_Hip": "mixamorig:RightUpLeg",
+        "L_Knee": "mixamorig:LeftLeg", "R_Knee": "mixamorig:RightLeg",
+        "L_Ankle": "mixamorig:LeftFoot", "R_Ankle": "mixamorig:RightFoot",
+        "L_Foot": "mixamorig:LeftToeBase", "R_Foot": "mixamorig:RightToeBase",
+        "Spine1": "mixamorig:Spine", "Spine2": "mixamorig:Spine1", "Spine3": "mixamorig:Spine2",
+        "Neck": "mixamorig:Neck", "Head": "mixamorig:Head",
+        "L_Collar": "mixamorig:LeftShoulder", "R_Collar": "mixamorig:RightShoulder",
+        "L_Shoulder": "mixamorig:LeftArm", "R_Shoulder": "mixamorig:RightArm",
+        "L_Elbow": "mixamorig:LeftForeArm", "R_Elbow": "mixamorig:RightForeArm",
+        "L_Wrist": "mixamorig:LeftHand", "R_Wrist": "mixamorig:RightHand"
+    }
 
     # Joint Hierarchy (SMPL-X parents)
     PARENTS = [-1, 0, 0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 9, 9, 12, 13, 14, 16, 17, 18, 19, 15, 15, 15, 20, 25, 26, 20, 28, 29, 20, 31, 32, 20, 34, 35, 20, 37, 38, 21, 40, 41, 21, 43, 44, 21, 46, 47, 21, 49, 50, 21, 52, 53]
 
-    # Flatten vertices and faces
-    v_flat = vertices.flatten()
+    # Flatten vertices and faces (Scale to cm for FBX)
+    v_flat = (vertices * 100.0).flatten()
     f_fbx = []
     for f in faces:
-        f_fbx.extend([int(f[0]), int(f[1]), int(-f[2] - 1)])
+        f_fbx.extend([int(f[0]), int(f[1]), -int(f[2]) - 1])
 
     v_str = ",".join(map(lambda x: f"{x:.6f}", v_flat))
     f_str = ",".join(map(str, f_fbx))
@@ -93,15 +107,26 @@ def save_fbx_ascii(vertices: np.ndarray, faces: np.ndarray, joints: np.ndarray, 
     joint_connections = ""
     for i, name in enumerate(JOINT_NAMES):
         id = 1000000 + i
+        fbx_name = BONE_MAP.get(name, name)
+        
+        # Calculate local translation relative to parent
+        p_idx = PARENTS[i]
+        pos = joints[i] * 100.0
+        if p_idx != -1:
+            p_pos = joints[p_idx] * 100.0
+            lcl = pos - p_pos
+        else:
+            lcl = pos
+            
         joint_models += f"""
-    Model: {id}, "Model::{name}", "LimbNode" {{
-        Version: 232
-        Properties70:  {{
-            P: "Lcl Translation", "Lcl Translation", "", "A", {joints[i][0]*100}, {joints[i][1]*100}, {joints[i][2]*100}
-        }}
-    }}"""
+\tModel: {id}, "Model::{fbx_name}", "LimbNode" {{
+\t\tVersion: 232
+\t\tProperties70:  {{
+\t\t\tP: "Lcl Translation", "Lcl Translation", "", "A", {lcl[0]:.6f}, {lcl[1]:.6f}, {lcl[2]:.6f}
+\t\t}}
+\t}}"""
         parent_id = 1000000 + PARENTS[i] if PARENTS[i] != -1 else 0
-        joint_connections += f"\n    C: \"OO\", {id}, {parent_id}"
+        joint_connections += f"\n\tC: \"OO\", {id}, {parent_id}"
 
     # Generate Deformers (Clusters)
     # This is where skinning weights are mapped
@@ -109,71 +134,122 @@ def save_fbx_ascii(vertices: np.ndarray, faces: np.ndarray, joints: np.ndarray, 
     cluster_connections = ""
     for i, name in enumerate(JOINT_NAMES):
         c_id = 3000000 + i
-        # Find vertices influenced by this joint (weight > 0.001)
+        pos = joints[i] * 100.0
         v_indices = np.where(weights[:, i] > 0.001)[0]
-        if len(v_indices) == 0: continue
         
-        idx_str = ",".join(map(str, v_indices))
-        w_str = ",".join(map(lambda x: f"{x:.4f}", weights[v_indices, i]))
+        # We MUST include all clusters, even empty ones, to keep joint indexing stable for Three.js
+        if len(v_indices) == 0:
+            idx_str = ""
+            w_str = ""
+            n_indices = 0
+        else:
+            idx_str = ",".join(map(str, v_indices))
+            w_str = ",".join(map(lambda x: f"{x:.4f}", weights[v_indices, i]))
+            n_indices = len(v_indices)
+        
+        # Global transform of the bone at bind time (no rotation, just world pos)
+        tl_str = f"1,0,0,0,0,1,0,0,0,0,1,0,{pos[0]:.6f},{pos[1]:.6f},{pos[2]:.6f},1"
         
         clusters += f"""
-    SubDeformer: {c_id}, "SubDeformer::Cluster", "Cluster" {{
-        Version: 100
-        Indexes: *{len(v_indices)} {{
-            a: {idx_str}
-        }}
-        Weights: *{len(v_indices)} {{
-            a: {w_str}
-        }}
-        Transform: *16 {{
-            a: 1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1
-        }}
-        TransformLink: *16 {{
-            a: 1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1
-        }}
-    }}"""
-        cluster_connections += f"\n    C: \"OO\", {c_id}, 2500000" # Connect to Skin Deformer
-        cluster_connections += f"\n    C: \"OO\", 1000000{i}, {c_id}" # Connect Joint to Cluster
+\tDeformer: {c_id}, "Cluster", "Cluster" {{
+		Version: 100
+		Indexes: *{n_indices} {{
+			a: {idx_str}
+		}}
+		Weights: *{n_indices} {{
+			a: {w_str}
+		}}
+\t\tTransform: *16 {{
+\t\t\ta: 1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1
+\t\t}}
+\t\tTransformLink: *16 {{
+\t\t\ta: {tl_str}
+\t\t}}
+\t}}"""
+        cluster_connections += f"\n\tC: \"OO\", {c_id}, 2500000" # Connect to Skin Deformer
+        cluster_connections += f"\n\tC: \"OO\", {c_id}, {1000000 + i}" # Connect Cluster to Joint (Joint is parent)
 
-    fbx_content = f"""FBX 7.4.0 project file
+    fbx_content = f"""; FBX 7.4.0 project file
 ; Created by Galatea Vision System
 
 FBXHeaderExtension:  {{
-    FBXHeaderVersion: 1003
-    FBXVersion: 7400
+\tFBXHeaderVersion: 1003
+\tFBXVersion: 7400
+}}
+
+GlobalSettings:  {{
+\tVersion: 1000
+\tProperties70:  {{
+\t\tP: "UpAxis", "int", "Integer", "", 2
+\t\tP: "UpAxisSign", "int", "Integer", "", 1
+\t\tP: "FrontAxis", "int", "Integer", "", 1
+\t\tP: "FrontAxisSign", "int", "Integer", "", -1
+\t\tP: "CoordAxis", "int", "Integer", "", 0
+\t\tP: "CoordAxisSign", "int", "Integer", "", 1
+\t\tP: "OriginalUpAxis", "int", "Integer", "", 2
+\t\tP: "OriginalUpAxisSign", "int", "Integer", "", 1
+\t\tP: "UnitScaleFactor", "double", "Number", "", 1.0
+\t\tP: "OriginalUnitScaleFactor", "double", "Number", "", 1.0
+\t}}
 }}
 
 Definitions:  {{
-    Count: {2 + len(JOINT_NAMES) * 2}
-    ObjectType: "Model" {{ Count: {1 + len(JOINT_NAMES)} }}
-    ObjectType: "Geometry" {{ Count: 1 }}
-    ObjectType: "Deformer" {{ Count: {1 + len(JOINT_NAMES)} }}
+\tCount: {2 + len(JOINT_NAMES) * 2}
+\tObjectType: "Model" {{
+\t\tCount: {1 + len(JOINT_NAMES)}
+\t}}
+\tObjectType: "Geometry" {{
+\t\tCount: 1
+\t}}
+\tObjectType: "Deformer" {{
+\t\tCount: {1 + len(JOINT_NAMES)}
+\t}}
 }}
 
 Objects:  {{
-    Geometry: 2000000, "Geometry::Mesh", "Mesh" {{
-        Vertices: *{len(v_flat)} {{ a: {v_str} }} 
-        PolygonVertexIndex: *{len(f_fbx)} {{ a: {f_str} }} 
-    }}
+	Geometry: 2000000, "Geometry::Mesh", "Mesh" {{
+		Vertices: *{len(v_flat)} {{
+			a: {v_str}
+		}}
+		PolygonVertexIndex: *{len(f_fbx)} {{
+			a: {f_str}
+		}}
+		LayerElementNormal: 0 {{
+			Version: 101
+			Name: ""
+			MappingInformationType: "ByVertex"
+			ReferenceInformationType: "Direct"
+			Normals: *{len(v_flat)} {{
+				a: {",".join(["0,1,0"] * (len(v_flat)//3))}
+			}}
+		}}
+		LayerElementUV: 0 {{
+			Version: 101
+			Name: ""
+			MappingInformationType: "ByVertex"
+			ReferenceInformationType: "Direct"
+			UV: *{len(vertices)*2} {{
+				a: {",".join(["0,0"] * len(vertices))}
+			}}
+		}}
+	}}
 
-    Model: 5000000, "Model::SMPLX_Mesh", "Mesh" {{
-        Version: 232
-        Properties70: {{ P: "Lcl Translation", "Lcl Translation", "", "A", 0,0,0 }}
-    }}
-    {joint_models}
+\tModel: 5000000, "Model::SMPLX_Mesh", "Mesh" {{
+\t\tVersion: 232
+\t\tProperties70:  {{
+\t\t\tP: "Lcl Translation", "Lcl Translation", "", "A", 0,0,0
+\t\t}}
+\t}}{joint_models}
 
-    Deformer: 2500000, "Deformer::Skin", "Skin" {{
-        Version: 101
-    }}
-    {clusters}
+\tDeformer: 2500000, "Deformer::Skin", "Skin" {{
+\t\tVersion: 101
+\t}}{clusters}
 }}
 
 Connections:  {{
-    C: "OO", 2000000, 5000000
-    C: "OO", 5000000, 0
-    C: "OO", 2500000, 2000000
-    {joint_connections}
-    {cluster_connections}
+\tC: "OO", 2000000, 5000000
+\tC: "OO", 5000000, 0
+	C: "OO", 2500000, 2000000{joint_connections}{cluster_connections}
 }}
 """
     output_path.write_text(fbx_content, encoding="utf-8")

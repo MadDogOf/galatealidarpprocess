@@ -21,6 +21,7 @@ OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 ALIGNED_DIR.mkdir(parents=True, exist_ok=True)
 
 @app.route('/')
+@app.route('/dashboard.html')
 def index():
     return send_file(ROOT / 'dashboard.html')
 

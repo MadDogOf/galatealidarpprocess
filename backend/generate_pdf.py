@@ -11,8 +11,8 @@ def generate_pdf(json_path, output_dir, filename_prefix, gender="Auto"):
         print(f"Error loading JSON: {e}")
         return None
 
-    # Replace underscores and special chars for LaTeX
-    source_name = f"{filename_prefix}_aligned.obj".replace('_', '\\_')
+    # Use source from JSON if available, otherwise fallback to filename_prefix
+    source_name = data.get('source', f"{filename_prefix}_aligned.obj").replace('_', '\\_')
 
     tex_content = r"""\documentclass[11pt,a4paper]{article}
 \usepackage[utf8]{inputenc}
@@ -45,7 +45,7 @@ def generate_pdf(json_path, output_dir, filename_prefix, gender="Auto"):
     \textbf{Measurement} & \textbf{Value (cm)} \\
     \midrule
     Across Shoulder & ACROSS_SHOULDER \\
-    Shoulder Width (Across Shoulder/2) & SHOULDER_WIDTH \\
+    Shoulder Width & SHOULDER_WIDTH \\
     Front Inner Shoulder & FRONT_INNER_SHOULDER \\
     Chest & CHEST \\
     Bust Size & BUST_SIZE \\
@@ -93,7 +93,7 @@ def generate_pdf(json_path, output_dir, filename_prefix, gender="Auto"):
 \end{document}
 """
 
-    def get_val(path, default="N/A"):
+    def get_val(path, default="N/A", precision=1):
         keys = path.split('.')
         val = data
         for k in keys:
@@ -102,7 +102,7 @@ def generate_pdf(json_path, output_dir, filename_prefix, gender="Auto"):
             else:
                 return default
         try:
-            return f"{float(val):.1f}"
+            return f"{float(val):.{precision}f}"
         except:
             return str(val)
 
@@ -111,7 +111,7 @@ def generate_pdf(json_path, output_dir, filename_prefix, gender="Auto"):
     tex_content = tex_content.replace("GENDER_LABEL", gender.capitalize())
     
     tex_content = tex_content.replace("HEIGHT", get_val("measurements.global.height"))
-    tex_content = tex_content.replace("SCALE_FACTOR", get_val("scale"))
+    tex_content = tex_content.replace("SCALE_FACTOR", get_val("scale", precision=4))
     
     tex_content = tex_content.replace("ACROSS_SHOULDER", get_val("measurements.upper_torso.across_shoulder"))
     tex_content = tex_content.replace("SHOULDER_WIDTH", get_val("measurements.upper_torso.shoulder_width"))
@@ -151,11 +151,12 @@ def generate_pdf(json_path, output_dir, filename_prefix, gender="Auto"):
         pdflatex_path = "pdflatex"
         
     try:
-        # Run pdflatex twice for formatting
-        subprocess.run(
-            [pdflatex_path, "-interaction=nonstopmode", "-output-directory", str(output_dir), str(tex_path)],
-            check=True, capture_output=True
-        )
+        # Run pdflatex twice for formatting (e.g., if we added longtable or refs)
+        for _ in range(2):
+            subprocess.run(
+                [pdflatex_path, "-interaction=nonstopmode", "-output-directory", str(output_dir), str(tex_path)],
+                check=True, capture_output=True
+            )
     except subprocess.CalledProcessError as e:
         print("LaTeX compilation failed:")
         print(e.stdout.decode('utf-8', errors='ignore'))

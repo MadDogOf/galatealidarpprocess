@@ -103,6 +103,38 @@
             border-color: #ff4444;
         }
 
+        .controls {
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            z-index: 100;
+        }
+
+        .btn-motion {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.75rem;
+            font-size: 0.7rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-align: left;
+            min-width: 180px;
+        }
+
+        .btn-motion:hover {
+            background: rgba(0, 255, 136, 0.1);
+            border-color: rgba(0, 255, 136, 0.3);
+            transform: translateX(-5px);
+        }
+
         #loader {
             position: absolute;
             inset: 0;
@@ -145,6 +177,23 @@
     <div class="vignette"></div>
 
     <div id="studio-ui">
+        <div class="controls">
+            <button class="btn-motion" onclick="location.reload()">
+                <span style="color: #00ff88;">↺</span> REBOOT ENGINE
+            </button>
+            <button class="btn-motion" onclick="window.close()">
+                <span style="color: #ff4444;">×</span> TERMINATE SESSION
+            </button>
+            <div style="height: 1px; background: rgba(255,255,255,0.1); margin: 0.5rem 0;"></div>
+            <button id="downloadBtn" class="btn-motion" style="background: rgba(0, 255, 136, 0.1); border-color: rgba(0, 255, 136, 0.2);">
+                <span style="color: #00ff88;">↓</span> DOWNLOAD RIG (.FBX)
+            </button>
+        </div>
+
+        <div class="hackathon-badge">
+            GALATEA_CORE // SYNTHESIS_ACTIVE // VERSION_1.0.4_BETA
+        </div>
+
         <div class="header">
             <div class="logo-group">
                 <h1>Galatea Studio</h1>
@@ -199,6 +248,53 @@
 
         document.getElementById('sourceFile').textContent = modelUrl.split('/').pop();
 
+        function createBlueprintMaterial() {
+            return new THREE.ShaderMaterial({
+                uniforms: {
+                    baseColor: { value: new THREE.Color('#222222') },
+                    gridColor: { value: new THREE.Color('#ffffff') },
+                    opacity: { value: 1.0 }
+                },
+                vertexShader: `
+                    varying vec3 vWorldPos;
+                    varying vec3 vNormal;
+                    void main() {
+                        vec4 worldPosition = modelMatrix * vec4(position, 1.0);
+                        vWorldPos = worldPosition.xyz;
+                        vNormal = normalize(normalMatrix * normal);
+                        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+                    }
+                `,
+                fragmentShader: `
+                    varying vec3 vWorldPos;
+                    varying vec3 vNormal;
+                    uniform vec3 baseColor;
+                    uniform vec3 gridColor;
+                    uniform float opacity;
+                    void main() {
+                        // Procedural Grid in World Space
+                        float scale = 40.0;
+                        float thickness = 0.1;
+                        
+                        vec3 f = abs(fract(vWorldPos * scale) - 0.5);
+                        vec3 gridLines = smoothstep(0.5 - thickness, 0.5, f);
+                        float g = max(gridLines.x, max(gridLines.y, gridLines.z));
+                        
+                        // Geometric Volume definition
+                        float viewDot = max(0.0, dot(vNormal, vec3(0, 0, 1)));
+                        float rim = pow(1.0 - viewDot, 2.0);
+                        vec3 volumeColor = mix(baseColor, baseColor + 0.3, rim); 
+                        
+                        vec3 color = mix(volumeColor, gridColor, g);
+                        gl_FragColor = vec4(color, 1.0);
+                    }
+                `,
+                transparent: false,
+                side: THREE.DoubleSide
+            });
+        }
+
+        const blueprintMaterial = createBlueprintMaterial();
         init();
         animate();
 
@@ -210,53 +306,74 @@
             camera.position.set(3, 1.5, 6);
 
             // Lighting
-            const ambientLight = new THREE.AmbientLight(0xffffff, 0.2);
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
             scene.add(ambientLight);
 
-            const spot1 = new THREE.SpotLight(0xffffff, 20);
+            const spot1 = new THREE.SpotLight(0xffffff, 2000);
             spot1.position.set(5, 10, 5);
-            spot1.angle = 0.3;
-            spot1.penumbra = 0.5;
             scene.add(spot1);
 
-            const spot2 = new THREE.SpotLight(0xffd700, 10);
+            const spot2 = new THREE.SpotLight(0xffd700, 1000);
             spot2.position.set(-5, 5, 5);
-            spot2.angle = 0.5;
             scene.add(spot2);
 
-            // Soft back light
-            const backLight = new THREE.DirectionalLight(0xffffff, 0.5);
-            backLight.position.set(0, 5, -10);
-            scene.add(backLight);
+            // Helpers
+            scene.add(new THREE.AxesHelper(5));
+            scene.add(new THREE.GridHelper(10, 10));
 
             // Renderer
-            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer = new THREE.WebGLRenderer({ antialias: false });
             renderer.setPixelRatio(window.devicePixelRatio);
             renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.toneMapping = THREE.ReinhardToneMapping;
-            renderer.shadowMap.enabled = true;
+            renderer.toneMapping = THREE.NoToneMapping;
+            renderer.shadowMap.enabled = false;
             document.body.appendChild(renderer.domElement);
 
             // Controls
             controls = new OrbitControls(camera, renderer.domElement);
             controls.enableDamping = true;
-            controls.target.set(0, 1, 0);
 
-            // Loaders
+            console.log("Kernel: Initializing assets...", { modelUrl, animUrl });
+
             const loader = new FBXLoader();
             
-            // Load Model
+            // Timeout to prevent infinite hang
+            const timeout = setTimeout(() => {
+                const status = document.getElementById('statusText');
+                if (status && status.textContent.includes('INITIALIZING')) {
+                    status.textContent = "KERNEL TIMEOUT: Check Asset Stream.";
+                    status.style.color = "#ff4444";
+                }
+            }, 15000);
+
             loader.load(modelUrl, (fbx) => {
+                clearTimeout(timeout);
+                console.log("Kernel: Model loaded successfully", fbx);
                 model = fbx;
-                fbx.scale.setScalar(0.01);
                 
+                // Auto-scale based on bbox
+                const bbox = new THREE.Box3().setFromObject(fbx);
+                const size = bbox.getSize(new THREE.Vector3());
+                const maxDim = Math.max(size.x, size.y, size.z);
+                console.log("Model dimensions:", size);
+                
+                if (maxDim > 100) fbx.scale.setScalar(0.01);
+                else fbx.scale.setScalar(1.0);
+                
+                // Bone Normalizer for retargeting
                 fbx.traverse(c => {
+                    if (c.isBone) {
+                        // Standardize names: remove prefixes and colons
+                        const oldName = c.name;
+                        c.name = c.name.replace(/.*:/, ''); 
+                        console.log(`Bone: ${oldName} -> ${c.name}`);
+                    }
                     if (c.isMesh) {
                         c.material = new THREE.MeshStandardMaterial({
-                            color: 0x222222,
-                            roughness: 0.1,
-                            metalness: 0.9,
-                            envMapIntensity: 1
+                            color: 0x888888,
+                            roughness: 0.4,
+                            metalness: 0.2,
+                            side: THREE.DoubleSide
                         });
                         c.castShadow = true;
                         c.receiveShadow = true;
@@ -264,33 +381,84 @@
                 });
 
                 scene.add(fbx);
+                
+                // Auto-center camera
+                const centerBox = new THREE.Box3().setFromObject(fbx);
+                const center = centerBox.getCenter(new THREE.Vector3());
+                controls.target.copy(center);
+                camera.position.set(center.x + 2, center.y + 0.5, center.z + 4);
+
                 mixer = new THREE.AnimationMixer(fbx);
 
                 // Load Animation
                 loader.load(animUrl, (animFbx) => {
-                    const action = mixer.clipAction(animFbx.animations[0]);
+                    const clip = animFbx.animations[0];
+                    
+                    // Normalize track names to match our standardized bones
+                    clip.tracks.forEach(track => {
+                        track.name = track.name.replace(/.*:/, '');
+                    });
+
+                    const action = mixer.clipAction(clip);
                     action.play();
+                    console.log("Animation playing");
                     
                     // Hide Loader
                     const loaderEl = document.getElementById('loader');
                     loaderEl.style.opacity = '0';
                     setTimeout(() => loaderEl.style.display = 'none', 800);
                     
+                    // Add "Synthesis Active" Badge
+                    const badge = document.createElement('div');
+                    badge.style.position = 'fixed';
+                    badge.style.top = '2rem';
+                    badge.style.left = '50%';
+                    badge.style.transform = 'translateX(-50%)';
+                    badge.style.padding = '0.5rem 1rem';
+                    badge.style.background = 'rgba(0, 255, 136, 0.1)';
+                    badge.style.border = '1px solid rgba(0, 255, 136, 0.3)';
+                    badge.style.borderRadius = '20px';
+                    badge.style.color = '#00ff88';
+                    badge.style.fontSize = '0.7rem';
+                    badge.style.letterSpacing = '0.2em';
+                    badge.style.textTransform = 'uppercase';
+                    badge.style.backdropFilter = 'blur(10px)';
+                    badge.style.zIndex = '100';
+                    badge.innerHTML = '<span class="pulse"></span> Synthesis Active';
+                    document.body.appendChild(badge);
+                    
                     lucide.createIcons();
+                }, undefined, (err) => {
+                    console.error('Anim Error:', err);
                 });
+            }, (xhr) => {
+                const percent = (xhr.loaded / xhr.total) * 100;
+                if (percent < 100) document.querySelector('#loader p').textContent = `SYNTHESIZING MODEL... ${Math.round(percent)}%`;
+            }, (error) => {
+                console.error("Model Load Error:", error);
+                alert("Error loading model. Check console.");
             });
 
             // UI Events
             document.getElementById('playPauseBtn').onclick = togglePlay;
+            document.getElementById('downloadBtn').onclick = () => {
+                const a = document.createElement('a');
+                a.href = modelUrl;
+                a.download = modelUrl.split('/').pop();
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            };
 
             window.addEventListener('resize', onWindowResize);
         }
 
         function togglePlay() {
+            if (!mixer) return;
             isPlaying = !isPlaying;
             const text = document.getElementById('playPauseText');
             const icon = document.getElementById('playPauseIcon');
-            
+
             if (isPlaying) {
                 mixer.timeScale = 1;
                 text.textContent = "Pause Simulation";
