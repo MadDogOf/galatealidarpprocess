@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.28 (TeX Live 2025) (preloaded format=pdflatex 2025.12.16)  26 APR 2026 13:54
+This is pdfTeX, Version 3.141592653-2.6-1.40.28 (TeX Live 2025) (preloaded format=pdflatex 2025.12.16)  26 APR 2026 13:59
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -125,7 +125,8 @@ Package: array 2025/09/25 v2.6n Tabular extension package (FMi)
 File: l3backend-pdftex.def 2025-10-09 L3 backend support: PDF output (pdfTeX)
 \l__color_backend_stack_int=\count290
 )
-No file uploaded_scan_smplx_measurements.aux.
+(/Users/arkaghosh/Desktop/AntiGravity/Galatea/galatealidarpprocess/output/model
+s/final/uploaded_scan_smplx_measurements.aux)
 \openout1 = `uploaded_scan_smplx_measurements.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 11.
@@ -142,6 +143,7 @@ LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 11.
 LaTeX Font Info:    ... okay on input line 11.
 LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 11.
 LaTeX Font Info:    ... okay on input line 11.
+
 *geometry* driver: auto-detecting
 *geometry* detected driver: pdftex
 *geometry* verbose mode - [ preamble ] result:
@@ -212,10 +214,10 @@ L3 programming layer <2025-11-14>
  ***********
  ) 
 Here is how much of TeX's memory you used:
- 2481 strings out of 467538
- 38418 string characters out of 5419545
- 470260 words of memory out of 5000000
- 31407 multiletter control sequences out of 15000+600000
+ 2484 strings out of 467538
+ 38711 string characters out of 5419545
+ 470251 words of memory out of 5000000
+ 31408 multiletter control sequences out of 15000+600000
  632325 words of font info for 55 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  57i,8n,65p,285b,179s stack positions out of 10000i,1000n,20000p,200000b,200000s
