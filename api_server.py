@@ -24,6 +24,10 @@ ALIGNED_DIR.mkdir(parents=True, exist_ok=True)
 def index():
     return send_file(ROOT / 'dashboard.html')
 
+@app.route('/motion_studio.html')
+def motion_studio():
+    return send_file(ROOT / 'motion_studio.html')
+
 @app.route('/upload', methods=['POST'])
 def upload_file():
     if 'file' not in request.files:

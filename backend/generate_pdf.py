@@ -45,7 +45,7 @@ def generate_pdf(json_path, output_dir, filename_prefix, gender="Auto"):
     \textbf{Measurement} & \textbf{Value (cm)} \\
     \midrule
     Across Shoulder & ACROSS_SHOULDER \\
-    Shoulder Width & SHOULDER_WIDTH \\
+    Shoulder Width (Across Shoulder/2) & SHOULDER_WIDTH \\
     Front Inner Shoulder & FRONT_INNER_SHOULDER \\
     Chest & CHEST \\
     Bust Size & BUST_SIZE \\
@@ -110,37 +110,37 @@ def generate_pdf(json_path, output_dir, filename_prefix, gender="Auto"):
     tex_content = tex_content.replace("SOURCE_NAME", source_name)
     tex_content = tex_content.replace("GENDER_LABEL", gender.capitalize())
     
-    tex_content = tex_content.replace("HEIGHT", get_val("general.height_cm"))
-    tex_content = tex_content.replace("SCALE_FACTOR", get_val("general.scale_factor_used"))
+    tex_content = tex_content.replace("HEIGHT", get_val("measurements.global.height"))
+    tex_content = tex_content.replace("SCALE_FACTOR", get_val("scale"))
     
-    tex_content = tex_content.replace("ACROSS_SHOULDER", get_val("upper_torso.across_shoulder"))
-    tex_content = tex_content.replace("SHOULDER_WIDTH", get_val("upper_torso.shoulder_width"))
-    tex_content = tex_content.replace("FRONT_INNER_SHOULDER", get_val("upper_torso.front_inner_shoulder"))
-    tex_content = tex_content.replace("CHEST", get_val("upper_torso.chest_girth"))
-    tex_content = tex_content.replace("BUST_SIZE", get_val("upper_torso.bust_size"))
-    tex_content = tex_content.replace("UNDERBUST", get_val("upper_torso.underbust_girth"))
-    tex_content = tex_content.replace("NECK_TO_WAIST", get_val("upper_torso.neck_to_waist"))
+    tex_content = tex_content.replace("ACROSS_SHOULDER", get_val("measurements.upper_torso.across_shoulder"))
+    tex_content = tex_content.replace("SHOULDER_WIDTH", get_val("measurements.upper_torso.shoulder_width"))
+    tex_content = tex_content.replace("FRONT_INNER_SHOULDER", get_val("measurements.upper_torso.front_inner_shoulder"))
+    tex_content = tex_content.replace("CHEST", get_val("measurements.upper_torso.chest"))
+    tex_content = tex_content.replace("BUST_SIZE", get_val("measurements.upper_torso.bust_size"))
+    tex_content = tex_content.replace("UNDERBUST", get_val("measurements.upper_torso.underbust"))
+    tex_content = tex_content.replace("NECK_TO_WAIST", get_val("measurements.upper_torso.neck_to_waist"))
     
-    tex_content = tex_content.replace("WAIST", get_val("lower_torso.waist_girth"))
-    tex_content = tex_content.replace("HIGH_HIP", get_val("lower_torso.high_hip_girth"))
-    tex_content = tex_content.replace("HIP", get_val("lower_torso.hip_girth"))
+    tex_content = tex_content.replace("WAIST", get_val("measurements.lower_torso.waist"))
+    tex_content = tex_content.replace("HIGH_HIP", get_val("measurements.lower_torso.high_hip"))
+    tex_content = tex_content.replace("HIP", get_val("measurements.lower_torso.hip"))
     
-    tex_content = tex_content.replace("NECK_CIRC", get_val("neck.neck_circumference"))
-    tex_content = tex_content.replace("NECK_BASE", get_val("neck.neck_base_circumference"))
-    tex_content = tex_content.replace("NECK_LENGTH", get_val("neck.neck_length"))
+    tex_content = tex_content.replace("NECK_CIRC", get_val("measurements.neck.neck_circumference"))
+    tex_content = tex_content.replace("NECK_BASE", get_val("measurements.neck.neck_base"))
+    tex_content = tex_content.replace("NECK_LENGTH", get_val("measurements.neck.neck_length"))
     
-    tex_content = tex_content.replace("UPPER_ARM", get_val("arms.upper_arm_length"))
-    tex_content = tex_content.replace("LOWER_ARM", get_val("arms.lower_arm_length"))
-    tex_content = tex_content.replace("BICEP", get_val("arms.bicep_girth"))
-    tex_content = tex_content.replace("FOREARM", get_val("arms.forearm_girth"))
-    tex_content = tex_content.replace("ELBOW", get_val("arms.elbow_width"))
+    tex_content = tex_content.replace("UPPER_ARM", get_val("measurements.arms.upper_arm_length"))
+    tex_content = tex_content.replace("LOWER_ARM", get_val("measurements.arms.lower_arm_length"))
+    tex_content = tex_content.replace("BICEP", get_val("measurements.arms.bicep_girth"))
+    tex_content = tex_content.replace("FOREARM", get_val("measurements.arms.forearm_girth"))
+    tex_content = tex_content.replace("ELBOW", get_val("measurements.arms.elbow_width"))
     
-    tex_content = tex_content.replace("UPPER_LEG", get_val("legs.upper_leg_length"))
-    tex_content = tex_content.replace("LOWER_LEG", get_val("legs.lower_leg_length"))
-    tex_content = tex_content.replace("THIGH", get_val("legs.thigh_girth"))
-    tex_content = tex_content.replace("CALF", get_val("legs.calf_girth"))
-    tex_content = tex_content.replace("ANKLE", get_val("legs.ankle_girth"))
-    tex_content = tex_content.replace("KNEE", get_val("legs.knee_width"))
+    tex_content = tex_content.replace("UPPER_LEG", get_val("measurements.legs.upper_leg_length"))
+    tex_content = tex_content.replace("LOWER_LEG", get_val("measurements.legs.lower_leg_length"))
+    tex_content = tex_content.replace("THIGH", get_val("measurements.legs.thigh_girth"))
+    tex_content = tex_content.replace("CALF", get_val("measurements.legs.calf_girth"))
+    tex_content = tex_content.replace("ANKLE", get_val("measurements.legs.ankle_girth"))
+    tex_content = tex_content.replace("KNEE", get_val("measurements.legs.knee_width"))
 
     tex_path = Path(output_dir) / f"{filename_prefix}_measurements.tex"
     with open(tex_path, 'w') as f:

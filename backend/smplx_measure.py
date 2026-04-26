@@ -58,18 +58,29 @@ DEFAULT_OUTDIR  = ROOT / "output" / "models" / "final"
 # FBX Export (ASCII)
 # ─────────────────────────────────────────────────────────────────────────────
 
-def save_fbx_ascii(vertices: np.ndarray, faces: np.ndarray, output_path: Path):
+def save_fbx_ascii(vertices: np.ndarray, faces: np.ndarray, joints: np.ndarray, weights: np.ndarray, output_path: Path):
     """
-    Exports the mesh as an FBX ASCII file. 
-    This is a text-based format that most 3D tools (Unity, Unreal, Blender) can read.
+    Exports the mesh as a RIGGED FBX ASCII file. 
+    Includes Skeleton (bones) and Skinning Weights (Deformers).
     """
     import datetime
     now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     
+    # SMPL-X Joint Names (Standard 55 joints)
+    JOINT_NAMES = [
+        "Pelvis", "L_Hip", "R_Hip", "Spine1", "L_Knee", "R_Knee", "Spine2", "L_Ankle", "R_Ankle", "Spine3",
+        "L_Foot", "R_Foot", "Neck", "L_Collar", "R_Collar", "Head", "L_Shoulder", "R_Shoulder", "L_Elbow", "R_Elbow",
+        "L_Wrist", "R_Wrist", "Jaw", "L_Eye_Irr", "R_Eye_Irr", "L_Index1", "L_Index2", "L_Index3", "L_Middle1", "L_Middle2",
+        "L_Middle3", "L_Pinky1", "L_Pinky2", "L_Pinky3", "L_Ring1", "L_Ring2", "L_Ring3", "L_Thumb1", "L_Thumb2", "L_Thumb3",
+        "R_Index1", "R_Index2", "R_Index3", "R_Middle1", "R_Middle2", "R_Middle3", "R_Pinky1", "R_Pinky2", "R_Pinky3", "R_Ring1",
+        "R_Ring2", "R_Ring3", "R_Thumb1", "R_Thumb2", "R_Thumb3"
+    ]
+
+    # Joint Hierarchy (SMPL-X parents)
+    PARENTS = [-1, 0, 0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 9, 9, 12, 13, 14, 16, 17, 18, 19, 15, 15, 15, 20, 25, 26, 20, 28, 29, 20, 31, 32, 20, 34, 35, 20, 37, 38, 21, 40, 41, 21, 43, 44, 21, 46, 47, 21, 49, 50, 21, 52, 53]
+
     # Flatten vertices and faces
     v_flat = vertices.flatten()
-    # FBX expects faces as indices where the last index of each polygon is (index * -1) - 1
-    # For triangles (a, b, c) -> a, b, (-c - 1)
     f_fbx = []
     for f in faces:
         f_fbx.extend([int(f[0]), int(f[1]), int(-f[2] - 1)])
@@ -77,103 +88,95 @@ def save_fbx_ascii(vertices: np.ndarray, faces: np.ndarray, output_path: Path):
     v_str = ",".join(map(lambda x: f"{x:.6f}", v_flat))
     f_str = ",".join(map(str, f_fbx))
 
-    fbx_template = f"""; FBX 7.4.0 project file
+    # Generate Model nodes for joints
+    joint_models = ""
+    joint_connections = ""
+    for i, name in enumerate(JOINT_NAMES):
+        id = 1000000 + i
+        joint_models += f"""
+    Model: {id}, "Model::{name}", "LimbNode" {{
+        Version: 232
+        Properties70:  {{
+            P: "Lcl Translation", "Lcl Translation", "", "A", {joints[i][0]*100}, {joints[i][1]*100}, {joints[i][2]*100}
+        }}
+    }}"""
+        parent_id = 1000000 + PARENTS[i] if PARENTS[i] != -1 else 0
+        joint_connections += f"\n    C: \"OO\", {id}, {parent_id}"
+
+    # Generate Deformers (Clusters)
+    # This is where skinning weights are mapped
+    clusters = ""
+    cluster_connections = ""
+    for i, name in enumerate(JOINT_NAMES):
+        c_id = 3000000 + i
+        # Find vertices influenced by this joint (weight > 0.001)
+        v_indices = np.where(weights[:, i] > 0.001)[0]
+        if len(v_indices) == 0: continue
+        
+        idx_str = ",".join(map(str, v_indices))
+        w_str = ",".join(map(lambda x: f"{x:.4f}", weights[v_indices, i]))
+        
+        clusters += f"""
+    SubDeformer: {c_id}, "SubDeformer::Cluster", "Cluster" {{
+        Version: 100
+        Indexes: *{len(v_indices)} {{
+            a: {idx_str}
+        }}
+        Weights: *{len(v_indices)} {{
+            a: {w_str}
+        }}
+        Transform: *16 {{
+            a: 1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1
+        }}
+        TransformLink: *16 {{
+            a: 1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1
+        }}
+    }}"""
+        cluster_connections += f"\n    C: \"OO\", {c_id}, 2500000" # Connect to Skin Deformer
+        cluster_connections += f"\n    C: \"OO\", 1000000{i}, {c_id}" # Connect Joint to Cluster
+
+    fbx_content = f"""FBX 7.4.0 project file
 ; Created by Galatea Vision System
 
 FBXHeaderExtension:  {{
     FBXHeaderVersion: 1003
     FBXVersion: 7400
-    CreationTimeStamp:  {{
-        Version: 1000
-        Year: 2026
-        Month: 4
-        Day: 26
-        Hour: 12
-        Minute: 0
-        Second: 0
-        Millisecond: 0
-    }}
-    Creator: "Galatea Vision"
-    SceneInfo: "SceneInfo::GlobalInfo", "UserData" {{
-        Type: "UserData"
-        Version: 100
-        MetaData:  {{
-            Version: 100
-            Title: "SMPL-X Digital Twin"
-            Author: "Galatea"
-        }}
-    }}
-}}
-
-GlobalSettings:  {{
-    Version: 1000
-    Properties70:  {{
-        P: "UpAxis", "int", "Integer", "", 1
-        P: "UpAxisSign", "int", "Integer", "", 1
-        P: "FrontAxis", "int", "Integer", "", 2
-        P: "FrontAxisSign", "int", "Integer", "", 1
-        P: "CoordAxis", "int", "Integer", "", 0
-        P: "CoordAxisSign", "int", "Integer", "", 1
-        P: "OriginalUpAxis", "int", "Integer", "", 1
-        P: "OriginalUpAxisSign", "int", "Integer", "", 1
-        P: "UnitScaleFactor", "double", "Number", "", 100.0
-    }}
-}}
-
-Documents:  {{
-    Count: 1
-    Document: 123456789, "", "Scene" {{
-    }}
-}}
-
-References:  {{
 }}
 
 Definitions:  {{
-    Version: 100
-    Count: 2
-    ObjectType: "Model" {{
-        Count: 1
-    }}
-    ObjectType: "Geometry" {{
-        Count: 1
-    }}
+    Count: {2 + len(JOINT_NAMES) * 2}
+    ObjectType: "Model" {{ Count: {1 + len(JOINT_NAMES)} }}
+    ObjectType: "Geometry" {{ Count: 1 }}
+    ObjectType: "Deformer" {{ Count: {1 + len(JOINT_NAMES)} }}
 }}
 
 Objects:  {{
     Geometry: 2000000, "Geometry::Mesh", "Mesh" {{
-        Vertices: *{len(v_flat)} {{
-            a: {v_str}
-        }} 
-        PolygonVertexIndex: *{len(f_fbx)} {{
-            a: {f_str}
-        }} 
-        GeometryVersion: 124
+        Vertices: *{len(v_flat)} {{ a: {v_str} }} 
+        PolygonVertexIndex: *{len(f_fbx)} {{ a: {f_str} }} 
     }}
 
-    Model: 1000000, "Model::SMPLX_Model", "Mesh" {{
+    Model: 5000000, "Model::SMPLX_Mesh", "Mesh" {{
         Version: 232
-        Properties70:  {{
-            P: "InheritType", "enum", "", "", 1
-            P: "ScalingMax", "Vector3D", "Vector", "", 0, 0, 0
-            P: "DefaultAttributeIndex", "int", "Integer", "", 0
-            P: "Lcl Translation", "Lcl Translation", "", "A", 0, 0, 0
-            P: "Lcl Rotation", "Lcl Rotation", "", "A", 0, 0, 0
-            P: "Lcl Scaling", "Lcl Scaling", "", "A", 1, 1, 1
-        }}
-        Shading: T
-        Culling: "CullingOff"
+        Properties70: {{ P: "Lcl Translation", "Lcl Translation", "", "A", 0,0,0 }}
     }}
+    {joint_models}
+
+    Deformer: 2500000, "Deformer::Skin", "Skin" {{
+        Version: 101
+    }}
+    {clusters}
 }}
 
 Connections:  {{
-    ; Connect Geometry to Model
-    C: "OO", 2000000, 1000000
-    ; Connect Model to Root
-    C: "OO", 1000000, 0
+    C: "OO", 2000000, 5000000
+    C: "OO", 5000000, 0
+    C: "OO", 2500000, 2000000
+    {joint_connections}
+    {cluster_connections}
 }}
 """
-    output_path.write_text(fbx_template, encoding="utf-8")
+    output_path.write_text(fbx_content, encoding="utf-8")
 
 
 # SMPL-X joint indices (body joints, first 22)
@@ -373,6 +376,7 @@ def fit_smplx(
         "vertices":       verts_final,
         "joints":         joints_final,
         "faces":          model.faces.copy(),
+        "weights":        model.lbs_weights.detach().cpu().numpy(), # ADDED WEIGHTS
         "betas":          betas.detach().cpu().numpy().flatten().tolist(),
         "body_pose":      body_pose.detach().cpu().numpy().flatten().tolist(),
         "global_orient":  global_orient.detach().cpu().numpy().flatten().tolist(),
@@ -781,8 +785,8 @@ def run(obj_path: str,
         # Export FBX
         out_fbx = out_json.with_suffix(".fbx")
         try:
-            save_fbx_ascii(fit["vertices"], fit["faces"], out_fbx)
-            print(f"Fitted SMPL-X FBX  : {out_fbx}  (ASCII format, Z-up)")
+            save_fbx_ascii(fit["vertices"], fit["faces"], fit["joints"], fit["weights"], out_fbx)
+            print(f"Fitted SMPL-X FBX  : {out_fbx}  (Rigged ASCII, Z-up)")
         except Exception as e:
             print(f"[WARN] FBX export failed: {e}")
 
